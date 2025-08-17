@@ -1,0 +1,161 @@
+import logging
+import json
+from datetime import datetime
+from pathlib import Path
+
+from telegram import Update
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    ContextTypes,
+    JobQueue,
+)
+
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+TOKEN = "8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8"
+
+DATA_FILE = Path("growth_data.json")
+
+
+# ---------- Helper functions ----------
+def load_data():
+    if DATA_FILE.exists():
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+# ---------- Commands ----------
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    await update.message.reply_markdown_v2(
+        fr"Hi {user.mention_markdown_v2()}\! "
+        "I can help you track member growth in your Telegram groups\. "
+        "Use /help to see available commands\."
+    )
+
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    help_text = """
+📊 *Member Growth Bot Help* 📊
+
+*Available Commands:*
+/start - Start the bot
+/help - Show this help message
+/stats - Get member statistics for this group
+/growth - Show growth over time (admin only)
+/invite - Generate invite link (admin only)
+
+*Note:* This bot only provides analytics and tools to help with organic growth.
+"""
+    await update.message.reply_text(help_text, parse_mode="Markdown")
+
+
+async def get_member_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat = update.effective_chat
+
+    if chat.type not in ["group", "supergroup", "channel"]:
+        await update.message.reply_text("This command only works in groups or channels!")
+        return
+
+    try:
+        member_count = await context.bot.get_chat_member_count(chat.id)
+        await update.message.reply_text(f"👥 Current member count: {member_count}")
+    except Exception as e:
+        logger.error(f"Error getting member count: {e}")
+        await update.message.reply_text("❌ Could not get member count.")
+
+
+async def track_growth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show stored growth stats"""
+    chat = update.effective_chat
+    data = load_data()
+    chat_id = str(chat.id)
+
+    if chat_id not in data:
+        await update.message.reply_text("📉 No growth data recorded yet. Wait for daily tracking.")
+        return
+
+    records = data[chat_id]
+    text = f"📈 Growth for {chat.title}:\n\n"
+    for day, count in records.items():
+        text += f"{day}: {count} members\n"
+
+    await update.message.reply_text(text)
+
+
+async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat = update.effective_chat
+    user = update.effective_user
+
+    try:
+        member = await context.bot.get_chat_member(chat.id, user.id)
+        if member.status not in ["administrator", "creator"]:
+            await update.message.reply_text("🚫 You need to be an admin to use this command.")
+            return
+
+        invite_link = await context.bot.create_chat_invite_link(chat.id)
+        await update.message.reply_text(
+            f"🔗 Here's your invite link:\n\n{invite_link.invite_link}\n\n"
+            "Share this to grow your community organically!",
+            disable_web_page_preview=True
+        )
+    except Exception as e:
+        logger.error(f"Error generating invite: {e}")
+        await update.message.reply_text("❌ Could not generate invite link.")
+
+
+# ---------- Daily job ----------
+async def record_daily_members(context: ContextTypes.DEFAULT_TYPE):
+    """Job runs daily to record member count of all groups"""
+    data = load_data()
+
+    for chat_id, chat_data in context.application.chat_data.items():
+        try:
+            count = await context.bot.get_chat_member_count(chat_id)
+            today = datetime.now().strftime("%Y-%m-%d")
+
+            if str(chat_id) not in data:
+                data[str(chat_id)] = {}
+
+            data[str(chat_id)][today] = count
+            logger.info(f"Recorded {count} members for chat {chat_id} on {today}")
+
+        except Exception as e:
+            logger.error(f"Error recording growth for chat {chat_id}: {e}")
+
+    save_data(data)
+
+
+# ---------- Main ----------
+def main() -> None:
+    app = Application.builder().token(TOKEN).build()
+
+    # Register commands
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("stats", get_member_stats))
+    app.add_handler(CommandHandler("growth", track_growth))
+    app.add_handler(CommandHandler("invite", generate_invite))
+
+    # Schedule daily tracking at midnight
+    job_queue: JobQueue = app.job_queue
+    job_queue.run_daily(record_daily_members, time=datetime.strptime("00:00", "%H:%M").time())
+
+    # Start bot
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
