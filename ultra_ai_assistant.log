@@ -1,0 +1,23 @@
+/workspace/ultra_ai_bot.py:441: PTBUserWarning: No `JobQueue` set up. To use `JobQueue`, you must install PTB via `pip install "python-telegram-bot[job-queue]"`.
+  job_queue: JobQueue = app.job_queue
+Traceback (most recent call last):
+  File "/workspace/ultra_ai_bot.py", line 449, in <module>
+    main()
+    ~~~~^^
+  File "/workspace/ultra_ai_bot.py", line 442, in main
+    job_queue.run_daily(record_daily_members, time=time(hour=0, minute=0))
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'run_daily'
+2025-08-17 17:12:26,152 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-08-17 17:12:26,152 - UltraAI - INFO - Ultra AI Assistant is running with enhanced privacy...
+2025-08-17 17:12:26,671 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getMe "HTTP/1.1 200 OK"
+2025-08-17 17:12:26,838 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/deleteWebhook "HTTP/1.1 200 OK"
+2025-08-17 17:12:26,839 - apscheduler.scheduler - INFO - Added job "record_daily_members" to job store "default"
+2025-08-17 17:12:26,839 - apscheduler.scheduler - INFO - Scheduler started
+2025-08-17 17:12:26,839 - telegram.ext.Application - INFO - Application started
+2025-08-17 17:12:27,360 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-17 17:12:27,724 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-17 17:12:33,286 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-17 17:12:33,286 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2025-08-17 17:12:33,286 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-08-17 17:12:33,297 - telegram.ext.Application - INFO - Application.stop() complete
