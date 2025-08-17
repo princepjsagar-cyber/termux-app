@@ -264,3 +264,36 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 - You also need to recompile bootstrap zip for the new package name. Check [building bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives), [here](https://github.com/termux/termux-app/issues/1983) and [here](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111).
 - Currently, not all plugins use `TermuxConstants` from `termux-shared` library and have hardcoded `com.termux` values and will need to be manually patched.
 - If forking termux plugins, check [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for info on how to use termux libraries for plugins.
+
+## Ultra AI Bot (Python)
+
+A new Telegram bot implementation is provided in `ultra_ai_bot.py`. It merges an AI assistant (OpenAI) with your existing growth tracking. It preserves `growth_data.json`.
+
+### Setup
+1. Copy `.env.example` to `.env` and fill values:
+   - `TELEGRAM_BOT_TOKEN`
+   - `OPENAI_API_KEY`
+   - `GOOGLE_API_KEY` and `GOOGLE_CX` (for /search)
+   - Optional: `USER_WHITELIST` comma-separated user IDs
+2. Create a virtualenv and install deps (if possible in your environment):
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+```
+If `venv` is unavailable on your system, consult the environment docs or install `python3-venv`.
+
+### Run
+```bash
+python ultra_ai_bot.py
+```
+
+### Commands
+- /start, /help
+- /search <query>
+- /ai <prompt>
+- /emotion <text>
+- /privacy, /clear
+- /stats, /growth, /invite
+
+`growth_data.json` will be created/updated next to the script and any existing data is preserved.

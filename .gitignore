@@ -37,3 +37,12 @@ local.properties
 .swp
 ehthumbs.db
 Thumbs.db
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+.env.*
