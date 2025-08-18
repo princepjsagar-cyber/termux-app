@@ -116,11 +116,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         if update.message and context.args:
             payload = context.args[0]
-            if isinstance(payload, str) and payload.startswith("ref_"):
-                inviter_id_str = payload.replace("ref_", "", 1)
-                if inviter_id_str.isdigit():
-                    inviter_id = int(inviter_id_str)
-                    await credit_referral_if_applicable(inviter_id=inviter_id, new_user_id=update.effective_user.id if update.effective_user else 0)
+            if isinstance(payload, str):
+                if payload.startswith("ref_"):
+                    inviter_id_str = payload.replace("ref_", "", 1)
+                    if inviter_id_str.isdigit():
+                        inviter_id = int(inviter_id_str)
+                        await credit_referral_if_applicable(inviter_id=inviter_id, new_user_id=update.effective_user.id if update.effective_user else 0)
+                elif payload.startswith("camp_"):
+                    # camp_<code>_ref_<inviter>
+                    try:
+                        rest = payload.replace("camp_", "", 1)
+                        parts = rest.split("_ref_")
+                        if len(parts) == 2:
+                            camp_code = parts[0]
+                            inviter_id_str = parts[1]
+                            if inviter_id_str.isdigit() and camp_code:
+                                inviter_id = int(inviter_id_str)
+                                await credit_campaign_referral_if_applicable(
+                                    campaign_code=camp_code,
+                                    inviter_id=inviter_id,
+                                    new_user_id=update.effective_user.id if update.effective_user else 0,
+                                )
+                    except Exception as exc:
+                        logger.warning("Failed to process campaign payload: %s", exc)
     except Exception as exc:
         logger.warning("Failed to process referral payload: %s", exc)
     keyboard = [
@@ -481,6 +499,8 @@ def build_application() -> Application:
 
 # --- Simple JSON-file based referral store (demo-grade) ---
 REFERRAL_STORE_PATH = os.path.join(os.path.dirname(__file__), "referrals.json")
+CAMPAIGN_STORE_PATH = os.path.join(os.path.dirname(__file__), "campaigns.json")
+PREFS_STORE_PATH = os.path.join(os.path.dirname(__file__), "prefs.json")
 
 
 def _load_referrals() -> Dict[str, Dict[str, int]]:
@@ -496,6 +516,36 @@ def _save_referrals(data: Dict[str, Dict[str, int]]) -> None:
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     os.replace(tmp, REFERRAL_STORE_PATH)
+
+
+def _load_campaigns() -> Dict:
+    try:
+        with open(CAMPAIGN_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"campaigns": {}, "referrals": {}}
+
+
+def _save_campaigns(data: Dict) -> None:
+    tmp = CAMPAIGN_STORE_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, CAMPAIGN_STORE_PATH)
+
+
+def _load_prefs() -> Dict[str, Dict[str, str]]:
+    try:
+        with open(PREFS_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_prefs(data: Dict[str, Dict[str, str]]) -> None:
+    tmp = PREFS_STORE_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, PREFS_STORE_PATH)
 
 
 async def credit_referral_if_applicable(inviter_id: int, new_user_id: int) -> None:
@@ -515,6 +565,24 @@ async def credit_referral_if_applicable(inviter_id: int, new_user_id: int) -> No
     invited.add(str(new_user_id))
     data[invited_set_key] = {k: 1 for k in invited}
     _save_referrals(data)
+
+
+async def credit_campaign_referral_if_applicable(campaign_code: str, inviter_id: int, new_user_id: int) -> None:
+    if not campaign_code or inviter_id <= 0 or new_user_id <= 0 or inviter_id == new_user_id:
+        return
+    data = _load_campaigns()
+    refs = data.setdefault("referrals", {}).setdefault(campaign_code, {})
+    inviter_key = str(inviter_id)
+    invited_set_key = f"invited_{inviter_key}"
+    invited = set(refs.get(invited_set_key, {}))
+    if str(new_user_id) in invited:
+        return
+    stats = refs.get(inviter_key, {"count": 0})
+    stats["count"] = int(stats.get("count", 0)) + 1
+    refs[inviter_key] = stats
+    invited.add(str(new_user_id))
+    refs[invited_set_key] = {k: 1 for k in invited}
+    _save_campaigns(data)
 
 
 async def referral_link_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -539,6 +607,34 @@ async def referral_link_command(update: Update, context: ContextTypes.DEFAULT_TY
     )
 
 
+async def campaign_link_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    if not user or not update.message:
+        return
+    if not context.args:
+        await update.message.reply_text("Usage: /campaign <code>")
+        return
+    camp_code = context.args[0].strip()
+    if not camp_code:
+        await update.message.reply_text("Usage: /campaign <code>")
+        return
+    try:
+        me = await context.bot.get_me()
+        bot_username = me.username
+    except Exception:
+        bot_username = None
+    if not bot_username:
+        await update.message.reply_text("Could not determine bot username.")
+        return
+    link = f"https://t.me/{bot_username}?start=camp_{camp_code}_ref_{user.id}"
+    await update.message.reply_text(
+        "🎯 "
+        + _bold("Campaign referral link")
+        + f"\n\nCampaign: {camp_code}\n"
+        + link
+    )
+
+
 async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message:
         return
@@ -555,6 +651,67 @@ async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     await update.message.reply_text("\n".join(lines))
 
 
+async def campaign_leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message:
+        return
+    if not context.args:
+        await update.message.reply_text("Usage: /campaignboard <code>")
+        return
+    camp_code = context.args[0].strip()
+    if not camp_code:
+        await update.message.reply_text("Usage: /campaignboard <code>")
+        return
+    data = _load_campaigns()
+    refs = data.get("referrals", {}).get(camp_code, {})
+    entries = [(int(uid), v.get("count", 0)) for uid, v in refs.items() if uid.isdigit()]
+    entries.sort(key=lambda x: x[1], reverse=True)
+    top = entries[:10]
+    if not top:
+        await update.message.reply_text("No referrals yet for this campaign.")
+        return
+    lines = ["🏁 " + _bold(f"Campaign Leaderboard: {camp_code}") + "\n"]
+    for rank, (uid, count) in enumerate(top, start=1):
+        lines.append(f"{rank}. User {uid}: {count}")
+    await update.message.reply_text("\n".join(lines))
+
+
+async def setlang_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message or not update.effective_user:
+        return
+    if not context.args:
+        await update.message.reply_text("Usage: /setlang <en|es|hi|ar|fr|de>")
+        return
+    lang = context.args[0].strip().lower()
+    if lang not in {"en", "es", "hi", "ar", "fr", "de"}:
+        await update.message.reply_text("Unsupported language. Use: en, es, hi, ar, fr, de")
+        return
+    prefs = _load_prefs()
+    prefs[str(update.effective_user.id)] = {"lang": lang}
+    _save_prefs(prefs)
+    await update.message.reply_text(f"Language set to {lang}.")
+
+
+async def verifyjoin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message or not context.args:
+        if update.message:
+            await update.message.reply_text("Usage: /verifyjoin <channel_username>")
+        return
+    channel = context.args[0].strip()
+    if channel.startswith("@"):  # normalize
+        channel = channel
+    else:
+        channel = f"@{channel}"
+    try:
+        member = await context.bot.get_chat_member(chat_id=channel, user_id=update.effective_user.id)  # type: ignore[arg-type]
+        status = getattr(member, "status", "unknown")
+        if status in {"creator", "administrator", "member"}:
+            await update.message.reply_text("✅ You are a member. Thanks!")
+        else:
+            await update.message.reply_text("❌ Not a member yet. Please join and try again.")
+    except Exception as exc:
+        await update.message.reply_text(f"Could not verify membership: {exc}")
+
+
 def main() -> None:
     application = build_application()
 
@@ -569,6 +726,10 @@ def main() -> None:
     application.add_handler(CommandHandler("disclose", disclose_command))
     application.add_handler(CommandHandler("referral", referral_link_command))
     application.add_handler(CommandHandler("leaderboard", leaderboard_command))
+    application.add_handler(CommandHandler("campaign", campaign_link_command))
+    application.add_handler(CommandHandler("campaignboard", campaign_leaderboard_command))
+    application.add_handler(CommandHandler("setlang", setlang_command))
+    application.add_handler(CommandHandler("verifyjoin", verifyjoin_command))
 
     # Buttons
     application.add_handler(CallbackQueryHandler(handle_button))

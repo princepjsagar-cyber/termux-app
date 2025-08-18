@@ -46,3 +46,7 @@ python bot.py
 - `/disclose` — Responsible disclosure guide and email template.
 - `/referral` — Get your personal deep-link referral URL.
 - `/leaderboard` — Top inviters by successful referrals.
+- `/campaign <code>` — Get a campaign-specific referral link.
+- `/campaignboard <code>` — Leaderboard for a specific campaign.
+- `/setlang <code>` — Set user language (en, es, hi, ar, fr, de).
+- `/verifyjoin <channel>` — Check if the user is a member of a channel.
