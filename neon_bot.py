@@ -860,6 +860,20 @@ def _get_flags(context: ContextTypes.DEFAULT_TYPE) -> Dict[str, bool]:
     }
     for k, v in defaults.items():
         flags.setdefault(k, v)
+    # Env overrides: FEATURE_<NAME>=on|off
+    def env_on(name: str, default: bool) -> bool:
+        val = os.environ.get(name)
+        if not val:
+            return default
+        val = val.strip().lower()
+        if val in ("1", "true", "on", "yes"): return True
+        if val in ("0", "false", "off", "no"): return False
+        return default
+    flags["moderation"] = env_on("FEATURE_MODERATION", flags["moderation"]) 
+    flags["quota"] = env_on("FEATURE_QUOTA", flags["quota"]) 
+    flags["ask_cache"] = env_on("FEATURE_ASK_CACHE", flags["ask_cache"]) 
+    flags["tts"] = env_on("FEATURE_TTS", flags["tts"]) 
+    flags["ocr"] = env_on("FEATURE_OCR", flags["ocr"]) 
     return flags
 
 # Simple per-user rate limiting
