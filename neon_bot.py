@@ -57,11 +57,11 @@ async def setkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Please provide a key: /setkey <name> <value>")
         return
     if len(args) < 2:
-        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|GEMINI_API_KEY|NEWS_API_KEY|BOT_DATA_KEY> <value>")
+        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|GEMINI_API_KEY|NEWS_API_KEY|NGROK_AUTHTOKEN|BOT_DATA_KEY> <value>")
         return
     name = args[0].strip().upper()
     value = " ".join(args[1:]).strip()
-    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "GEMINI_API_KEY", "NEWS_API_KEY", "BOT_DATA_KEY"}
+    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "GEMINI_API_KEY", "NEWS_API_KEY", "NGROK_AUTHTOKEN", "BOT_DATA_KEY"}
     if name not in allowed:
         await update.message.reply_text("Key must be one of: " + ", ".join(sorted(allowed)))
         return
@@ -81,7 +81,8 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• GOOGLE_CSE_API_KEY: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_API_KEY') else 'Not Set'}\n"
         f"• GOOGLE_CSE_CX: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_CX') else 'Not Set'}\n"
         f"• GEMINI_API_KEY: {'Set' if _get_runtime_key(context, 'GEMINI_API_KEY') else 'Not Set'}\n"
-        f"• NEWS_API_KEY: {'Set' if _get_runtime_key(context, 'NEWS_API_KEY') else 'Not Set'}"
+        f"• NEWS_API_KEY: {'Set' if _get_runtime_key(context, 'NEWS_API_KEY') else 'Not Set'}\n"
+        f"• NGROK_AUTHTOKEN: {'Set' if _get_runtime_key(context, 'NGROK_AUTHTOKEN') else 'Not Set'}"
     )
 
 
@@ -728,6 +729,17 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def newsportal_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    public_url_path = "/workspace/news_portal_url.txt"
+    public_url = None
+    try:
+        if os.path.exists(public_url_path):
+            with open(public_url_path, "r") as f:
+                public_url = f.read().strip()
+    except Exception:
+        public_url = None
+    if public_url:
+        await update.message.reply_text(f"📰 News Portal: {public_url}")
+        return
     host = os.environ.get("NEWS_PORTAL_HOST", "http://127.0.0.1:8080")
     await update.message.reply_text(f"📰 News Portal: {host}")
 
