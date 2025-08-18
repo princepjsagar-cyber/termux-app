@@ -52,11 +52,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def setkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     if not args:
-        await update.message.reply_text("⚠️ Please provide a key: /setkey <your_key>")
+        await update.message.reply_text("⚠️ Please provide a key: /setkey <name> <value>")
         return
-    key = " ".join(args)
-    context.application.bot_data["BOT_DATA_KEY"] = key
-    await update.message.reply_text(f"✅ Key set. Your data will be encrypted with: {key[:4]}...")
+    if len(args) < 2:
+        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|BOT_DATA_KEY> <value>")
+        return
+    name = args[0].strip().upper()
+    value = " ".join(args[1:]).strip()
+    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "BOT_DATA_KEY"}
+    if name not in allowed:
+        await update.message.reply_text("Key must be one of: " + ", ".join(sorted(allowed)))
+        return
+    context.application.bot_data[name] = value
+    await update.message.reply_text("✅ Set " + name + " (in-memory)")
 
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,10 +73,11 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• Token: {'Set' if BOT_TOKEN else 'Not Set'}\n"
         f"• Data Key: {'Set' if context.application.bot_data.get('BOT_DATA_KEY') else 'Not Set'}\n"
         f"• Store Path: {_get_store_path()}\n"
-        f"• OpenAI API Key: {'Set' if os.environ.get('OPENAI_API_KEY') else 'Not Set'}\n"
-        f"• DALL-E API Key: {'Set' if os.environ.get('DALL_E_API_KEY') else 'Not Set'}\n"
-        f"• Google Custom Search API Key: {'Set' if os.environ.get('GOOGLE_CSE_API_KEY') else 'Not Set'}\n"
-        f"• GitHub API Key: {'Set' if os.environ.get('GITHUB_API_KEY') else 'Not Set'}"
+        f"• OPENAI_API_KEY: {'Set' if _get_runtime_key(context, 'OPENAI_API_KEY') else 'Not Set'}\n"
+        f"• TAVILY_API_KEY: {'Set' if _get_runtime_key(context, 'TAVILY_API_KEY') else 'Not Set'}\n"
+        f"• SERPAPI_KEY: {'Set' if _get_runtime_key(context, 'SERPAPI_KEY') else 'Not Set'}\n"
+        f"• GOOGLE_CSE_API_KEY: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_API_KEY') else 'Not Set'}\n"
+        f"• GOOGLE_CSE_CX: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_CX') else 'Not Set'}"
     )
 
 
@@ -109,11 +118,29 @@ async def web_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     import httpx
     tc = get_tavily_client(context)
     serpapi_key = get_serpapi_key(context)
+    gkey = get_google_cse_key(context)
+    gcx = get_google_cse_cx(context)
     query = " ".join(context.args) if context.args else ""
     if not query:
         await update.message.reply_text("Usage: /web <query>")
         return
     try:
+        if gkey and gcx:
+            params = {"key": gkey, "cx": gcx, "q": query, "num": 5}
+            async with httpx.AsyncClient(timeout=20) as client:
+                resp = await client.get("https://www.googleapis.com/customsearch/v1", params=params)
+                resp.raise_for_status()
+                data = resp.json()
+            items = data.get("items", [])
+            lines = []
+            for item in items[:5]:
+                title = item.get("title", "")
+                link = item.get("link", "")
+                snippet = item.get("snippet", "")
+                lines.append(f"- {title}\n{snippet}\n{link}")
+            body = "\n\n".join(lines) or "No results."
+            await update.message.reply_text(f"🔎 {query}\n\n{body}"[:4096], disable_web_page_preview=True)
+            return
         if tc:
             results = tc.search(query=query, search_depth="advanced", max_results=5)
             sources = results.get("results", [])
@@ -139,7 +166,7 @@ async def web_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             body = "\n\n".join(lines) or "No results."
             await update.message.reply_text(f"🔎 {query}\n\n{body}"[:4096], disable_web_page_preview=True)
             return
-        await update.message.reply_text("Set TAVILY_API_KEY or SERPAPI_KEY to enable web search.")
+        await update.message.reply_text("Set GOOGLE_CSE_API_KEY+GOOGLE_CSE_CX or TAVILY_API_KEY or SERPAPI_KEY to enable web search.")
     except Exception as e:
         logging.exception("Web search error: %s", e)
         await update.message.reply_text("❌ Web search failed.")
@@ -283,6 +310,12 @@ def get_tavily_client(context: ContextTypes.DEFAULT_TYPE):
 
 def get_serpapi_key(context: ContextTypes.DEFAULT_TYPE) -> str:
     return _get_runtime_key(context, "SERPAPI_KEY")
+
+def get_google_cse_key(context: ContextTypes.DEFAULT_TYPE) -> str:
+    return _get_runtime_key(context, "GOOGLE_CSE_API_KEY")
+
+def get_google_cse_cx(context: ContextTypes.DEFAULT_TYPE) -> str:
+    return _get_runtime_key(context, "GOOGLE_CSE_CX")
 
 
 def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
