@@ -5,8 +5,9 @@ import asyncio
 import logging
 import json
 import hashlib
+import time
 from typing import List, Dict, Any
-from telegram import Update, InputFile
+from telegram import Update, InputFile, InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -14,6 +15,7 @@ from telegram.ext import (
     AIORateLimiter,
     MessageHandler,
     filters,
+    InlineQueryHandler,
 )
 
 logging.basicConfig(
@@ -730,6 +732,27 @@ async def newsportal_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.message.reply_text(f"📰 News Portal: {host}")
 
 
+async def inline_query_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.inline_query.query or ""
+    if not query.strip():
+        return
+    # Simple AI-backed suggestion: echo + web hint
+    suggestions = [
+        InlineQueryResultArticle(
+            id=str(int(time.time() * 1000)),
+            title=f"Ask: {query[:50]}",
+            input_message_content=InputTextMessageContent(f"/ask {query}")
+        )
+    ]
+    try:
+        await update.inline_query.answer(suggestions, cache_time=5, is_personal=True)
+    except Exception:
+        pass
+
+async def health_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("OK")
+
+
 def main():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN environment variable is not set")
@@ -764,10 +787,12 @@ def main():
     application.add_handler(CommandHandler("subscribe_news", subscribe_news_command))
     application.add_handler(CommandHandler("unsubscribe_news", unsubscribe_news_command))
     application.add_handler(CommandHandler("code", code_command))
+    application.add_handler(CommandHandler("health", health_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
+    application.add_handler(InlineQueryHandler(inline_query_handler))
 
     application.add_error_handler(error_handler)
 
