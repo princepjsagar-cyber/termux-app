@@ -78,30 +78,41 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
 
 
 # --------- AI provider utils ---------
-def get_openai_client():
+def _get_runtime_key(context: ContextTypes.DEFAULT_TYPE, name: str) -> str:
+    try:
+        app_data = context.application.bot_data
+        val = app_data.get(name)
+        if isinstance(val, str) and val.strip():
+            return val.strip()
+    except Exception:
+        pass
+    return os.environ.get(name, "").strip()
+
+
+def get_openai_client(context: ContextTypes.DEFAULT_TYPE):
     try:
         from openai import OpenAI
     except Exception:
         return None
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = _get_runtime_key(context, "OPENAI_API_KEY")
     if not api_key:
         return None
     return OpenAI(api_key=api_key)
 
 
-def get_tavily_client():
+def get_tavily_client(context: ContextTypes.DEFAULT_TYPE):
     try:
         from tavily import TavilyClient
     except Exception:
         return None
-    api_key = os.environ.get("TAVILY_API_KEY")
+    api_key = _get_runtime_key(context, "TAVILY_API_KEY")
     if not api_key:
         return None
     return TavilyClient(api_key=api_key)
 
 
-def get_serpapi_key() -> str:
-    return os.environ.get("SERPAPI_KEY", "").strip()
+def get_serpapi_key(context: ContextTypes.DEFAULT_TYPE) -> str:
+    return _get_runtime_key(context, "SERPAPI_KEY")
 
 
 def append_user_message(history: List[Dict[str, Any]], text: str) -> None:
@@ -120,7 +131,7 @@ def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
 
 # --------- AI chat (with streaming edits) ---------
 async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt: str):
-    client = get_openai_client()
+    client = get_openai_client(context)
     if not client:
         await update.message.reply_text("Set OPENAI_API_KEY to enable AI chat.")
         return
@@ -191,7 +202,7 @@ async def ai_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --------- Vision on photo ---------
 async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    client = get_openai_client()
+    client = get_openai_client(context)
     if not client:
         return
     if not update.message or not update.message.photo:
@@ -226,7 +237,7 @@ async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --------- Image generation ---------
 async def img_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    client = get_openai_client()
+    client = get_openai_client(context)
     if not client:
         await update.message.reply_text("Set OPENAI_API_KEY to enable image generation.")
         return
@@ -282,8 +293,8 @@ async def voice_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --------- Web search ---------
 async def web_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     import httpx
-    tc = get_tavily_client()
-    serpapi_key = get_serpapi_key()
+    tc = get_tavily_client(context)
+    serpapi_key = get_serpapi_key(context)
     query = " ".join(context.args) if context.args else ""
     if not query:
         await update.message.reply_text("Usage: /web <query>")
@@ -325,6 +336,49 @@ async def web_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.exception("Web search error: %s", e)
         await update.message.reply_text("❌ Web search failed.")
+
+
+# --------- In-memory config management ---------
+MASK = "••••••••"
+
+
+def _mask_key(value: str) -> str:
+    if not value:
+        return "(missing)"
+    if len(value) <= 8:
+        return MASK
+    return value[:4] + MASK + value[-4:]
+
+
+async def setkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or len(context.args) < 2:
+        await update.message.reply_text(
+            "Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY> <value>"
+        )
+        return
+    name = context.args[0].strip().upper()
+    value = " ".join(context.args[1:]).strip()
+    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY"}
+    if name not in allowed:
+        await update.message.reply_text(
+            "Key must be one of: OPENAI_API_KEY, TAVILY_API_KEY, SERPAPI_KEY"
+        )
+        return
+    context.application.bot_data[name] = value
+    await update.message.reply_text(f"✅ Set {name} = {_mask_key(value)} (in-memory)")
+
+
+async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    openai = _get_runtime_key(context, "OPENAI_API_KEY")
+    tavily = _get_runtime_key(context, "TAVILY_API_KEY")
+    serp = _get_runtime_key(context, "SERPAPI_KEY")
+    lines = [
+        f"OPENAI_API_KEY: {_mask_key(openai)}",
+        f"TAVILY_API_KEY: {_mask_key(tavily)}",
+        f"SERPAPI_KEY: {_mask_key(serp)}",
+        "Features: AI chat, vision, images, voice, web search, code exec",
+    ]
+    await update.message.reply_text("\n".join(lines))
 
 
 # --------- Code execution via Piston ---------
@@ -392,6 +446,8 @@ def main():
     application.add_handler(CommandHandler("help", start))
     application.add_handler(CommandHandler("add", add_data))
     application.add_handler(CommandHandler("get", get_data))
+    application.add_handler(CommandHandler("setkey", setkey_command))
+    application.add_handler(CommandHandler("status", status_command))
     application.add_handler(CommandHandler("ai", ai_command))
     application.add_handler(CommandHandler("img", img_command))
     application.add_handler(CommandHandler("web", web_command))
