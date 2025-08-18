@@ -22,6 +22,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")  # Google CSE 'cx' value
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")  # Optional fallback
+PREFER_SERPAPI = os.getenv("PREFER_SERPAPI", "0").strip() in {"1", "true", "TRUE", "yes", "on"}
 
 DATA_DIR = os.getenv("DATA_DIR", "/workspace/data")
 BACKUP_DIR = os.getenv("BACKUP_DIR", "/workspace/backups")
@@ -163,7 +164,13 @@ def google_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict],
         return [], None
 
 
-def serpapi_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict], Optional[int]]:
+def serpapi_search(
+    query: str,
+    start: int = 1,
+    num: int = 3,
+    tbm: Optional[str] = None,
+    tbs: Optional[str] = None,
+) -> Tuple[List[dict], Optional[int]]:
     """Optional SerpAPI fallback. Returns items in the same shape as google_search.
     Pagination may be limited depending on plan.
     """
@@ -180,18 +187,30 @@ def serpapi_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict]
         "hl": "en",
         "gl": "us",
     }
+    if tbm:
+        params["tbm"] = tbm
+    if tbs:
+        params["tbs"] = tbs
     try:
         resp = requests.get(url, params=params, timeout=12)
         resp.raise_for_status()
         data = resp.json()
-        organic = data.get("organic_results", []) or []
+        # When searching news (tbm=nws), results live under 'news_results' (sometimes 'top_stories')
+        if tbm == "nws":
+            raw = data.get("news_results", []) or data.get("top_stories", []) or []
+        else:
+            raw = data.get("organic_results", []) or []
         items: List[dict] = []
-        for r in organic[:num]:
-            items.append({
-                "title": r.get("title") or "No Title",
-                "link": r.get("link") or "#",
-                "snippet": r.get("snippet") or r.get("about_this_result", {}).get("source", {}).get("description") or "No description available",
-            })
+        for r in raw[:num]:
+            title = r.get("title") or "No Title"
+            link = r.get("link") or "#"
+            snippet = (
+                r.get("snippet")
+                or r.get("date")
+                or r.get("about_this_result", {}).get("source", {}).get("description")
+                or "No description available"
+            )
+            items.append({"title": title, "link": link, "snippet": snippet})
         # SerpAPI next page calculation may require paid plan; keep simple.
         next_start = None
         return items, next_start
@@ -200,18 +219,27 @@ def serpapi_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict]
 
 
 def search_web(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict], Optional[int], str]:
-    """Try Google CSE first, then SerpAPI if configured. Returns (items, next_start, provider)."""
-    items, next_start = google_search(query, start=start, num=num)
-    if items:
-        return items, next_start, "google"
-    items2, next_start2 = serpapi_search(query, start=start, num=num)
-    if items2:
-        return items2, next_start2, "serpapi"
-    return [], None, "none"
+    """Try preferred provider first. Returns (items, next_start, provider)."""
+    if PREFER_SERPAPI and SERPAPI_KEY:
+        items2, next_start2 = serpapi_search(query, start=start, num=num)
+        if items2:
+            return items2, next_start2, "serpapi"
+        items, next_start = google_search(query, start=start, num=num)
+        if items:
+            return items, next_start, "google"
+        return [], None, "none"
+    else:
+        items, next_start = google_search(query, start=start, num=num)
+        if items:
+            return items, next_start, "google"
+        items2, next_start2 = serpapi_search(query, start=start, num=num)
+        if items2:
+            return items2, next_start2, "serpapi"
+        return [], None, "none"
 
 
-def _format_results_message(items: List[dict]) -> str:
-    lines: List[str] = ["🌐 Here are top results:", ""]
+def _format_results_message(items: List[dict], header: str = "🌐 Here are top results:") -> str:
+    lines: List[str] = [header, ""]
     for item in items[:3]:
         title = html.escape(item.get("title", "No Title"))
         link = item.get("link", "#")
@@ -229,6 +257,54 @@ def _build_more_keyboard(has_more: bool) -> Optional[InlineKeyboardMarkup]:
     return kb
 
 
+@bot.message_handler(commands=["rt"])  # type: ignore[arg-type]
+def handle_realtime(message: Message) -> None:
+    if not SERPAPI_KEY:
+        bot.reply_to(message, "Real-time search requires SerpAPI. Configure SERPAPI_KEY.")
+        return
+    args = (message.text or "").split(maxsplit=1)
+    query = (args[1] if len(args) > 1 else "").strip()
+    if not query:
+        bot.reply_to(message, "Usage: /rt <query>")
+        return
+    chat_id = message.chat.id
+    if _rate_limited(chat_id, min_interval_seconds=1.0):
+        bot.reply_to(message, "⏳ Slow down a bit—please wait a moment.")
+        return
+    bot.send_chat_action(chat_id, "typing")
+    _log_query(chat_id, f"/rt {query}")
+    items, _ = serpapi_search(query, start=1, num=3)
+    if not items:
+        bot.reply_to(message, "No live results found.")
+        return
+    text = _format_results_message(items, header="⚡ Live search results:")
+    bot.send_message(chat_id, text, disable_web_page_preview=True)
+
+
+@bot.message_handler(commands=["news"])  # type: ignore[arg-type]
+def handle_news(message: Message) -> None:
+    if not SERPAPI_KEY:
+        bot.reply_to(message, "News search requires SerpAPI. Configure SERPAPI_KEY.")
+        return
+    args = (message.text or "").split(maxsplit=1)
+    topic = (args[1] if len(args) > 1 else "").strip()
+    if not topic:
+        bot.reply_to(message, "Usage: /news <topic>")
+        return
+    chat_id = message.chat.id
+    if _rate_limited(chat_id, min_interval_seconds=1.0):
+        bot.reply_to(message, "⏳ Slow down a bit—please wait a moment.")
+        return
+    bot.send_chat_action(chat_id, "typing")
+    _log_query(chat_id, f"/news {topic}")
+    # SerpAPI news tab: tbm=nws; optionally tbs for recency (e.g., qdr:h)
+    items, _ = serpapi_search(topic, start=1, num=3, tbm="nws")
+    if not items:
+        bot.reply_to(message, "No news found.")
+        return
+    text = _format_results_message(items, header="🗞️ Top news:")
+    bot.send_message(chat_id, text, disable_web_page_preview=True)
+
 @bot.message_handler(commands=["start", "help"])  # type: ignore[arg-type]
 def handle_start(message: Message) -> None:
     bot.send_message(
@@ -238,7 +314,8 @@ def handle_start(message: Message) -> None:
             "Tips:\n"
             "- Be specific (e.g., 'python dataclass default factory').\n"
             "- Tap ‘More results’ to paginate.\n"
-            "- I keep it safe-search by default."
+            "- I keep it safe-search by default.\n"
+            "- Use /news <topic> for real-time news, /rt <query> for live search (SerpAPI)."
         ),
         disable_web_page_preview=True,
     )
