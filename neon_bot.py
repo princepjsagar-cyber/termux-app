@@ -34,38 +34,72 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Available commands:\n"
-        "\n"
-        "Core:\n"
-        "/start — Welcome message\n"
-        "/help, /commands — This help\n"
-        "/status, /health — Bot status & liveness\n"
-        "\n"
-        "AI:\n"
-        "/ai <prompt> — Chat with AI (streaming)\n"
-        "/ask <question> — Fresh web context + answer\n"
-        "/img <prompt> — Image generation (Gemini)\n"
-        "\n"
-        "Search & News:\n"
-        "/web <query> — Web search (CSE→Tavily→SerpAPI)\n"
-        "/news [SYMS] — Latest headlines (e.g., AAPL,TSLA)\n"
-        "/subscribe_news [SYMS] [minutes] — Push updates\n"
-        "/unsubscribe_news — Stop pushes\n"
-        "/newsportal — Portal link\n"
-        "\n"
-        "Voice & Vision:\n"
-        "/tts <text> — Text to speech\n"
-        "/ocr — Send/reply with an image to extract text\n"
-        "\n"
-        "Personalization:\n"
-        "/persona set <name> | /persona list — Persona modes\n"
-        "\n"
-        "Admin & Config:\n"
-        "/feature <name> on|off — Toggle features (owner)\n"
-        "/analytics — Usage counters (owner)\n"
-        "/setkey <NAME> <VALUE> — Set API keys/config"
-    )
+    user = update.effective_user
+    is_owner = bool(OWNER_ID and user and user.id == OWNER_ID) or (OWNER_ID == 0)
+    lang = (getattr(user, "language_code", "") or "").lower()
+    is_hi = lang.startswith("hi")
+
+    if is_hi:
+        user_help = (
+            "उपलब्ध कमांड्स:\n\n"
+            "मुख्य:\n"
+            "/start — स्वागत संदेश\n"
+            "/help, /commands — यह सहायता\n"
+            "/status, /health — बॉट की स्थिति\n\n"
+            "AI:\n"
+            "/ai <प्रॉम्प्ट> — AI चैट (स्ट्रीमिंग)\n"
+            "/ask <सवाल> — ताज़ा वेब संदर्भ + उत्तर\n"
+            "/img <प्रॉम्प्ट> — इमेज जनरेशन (Gemini)\n\n"
+            "खोज और समाचार:\n"
+            "/web <क्वेरी> — वेब सर्च\n"
+            "/news [SYMS] — ताज़ा सुर्खियाँ\n"
+            "/subscribe_news [SYMS] [मिनट] — नियमित अपडेट\n"
+            "/unsubscribe_news — अपडेट बंद\n"
+            "/newsportal — न्यूज़ पोर्टल लिंक\n\n"
+            "आवाज़ और विज़न:\n"
+            "/tts <टेक्स्ट> — टेक्स्ट से आवाज़\n"
+            "/ocr — इमेज से टेक्स्ट निकालें\n\n"
+            "पर्सोना:\n"
+            "/persona set <नाम> | /persona list — मोड बदलें\n"
+        )
+        admin_extra = (
+            "\nएडमिन/कन्फ़िग:\n"
+            "/feature <name> on|off — फीचर टॉगल\n"
+            "/analytics — उपयोग काउंटर\n"
+            "/setkey <NAME> <VALUE> — API की/कन्फ़िग सेट करें\n"
+        )
+    else:
+        user_help = (
+            "Available commands:\n\n"
+            "Core:\n"
+            "/start — Welcome message\n"
+            "/help, /commands — This help\n"
+            "/status, /health — Bot status & liveness\n\n"
+            "AI:\n"
+            "/ai <prompt> — Chat with AI (streaming)\n"
+            "/ask <question> — Fresh web context + answer\n"
+            "/img <prompt> — Image generation (Gemini)\n\n"
+            "Search & News:\n"
+            "/web <query> — Web search (CSE→Tavily→SerpAPI)\n"
+            "/news [SYMS] — Latest headlines (e.g., AAPL,TSLA)\n"
+            "/subscribe_news [SYMS] [minutes] — Push updates\n"
+            "/unsubscribe_news — Stop pushes\n"
+            "/newsportal — Portal link\n\n"
+            "Voice & Vision:\n"
+            "/tts <text> — Text to speech\n"
+            "/ocr — Send/reply with an image to extract text\n\n"
+            "Personalization:\n"
+            "/persona set <name> | /persona list — Persona modes\n"
+        )
+        admin_extra = (
+            "\nAdmin & Config:\n"
+            "/feature <name> on|off — Toggle features (owner)\n"
+            "/analytics — Usage counters (owner)\n"
+            "/setkey <NAME> <VALUE> — Set API keys/config\n"
+        )
+
+    text = user_help + (admin_extra if is_owner else "")
+    await update.message.reply_text(text)
 
 
 async def setkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
