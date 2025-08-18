@@ -35,7 +35,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    is_owner = bool(OWNER_ID and user and user.id == OWNER_ID) or (OWNER_ID == 0)
     lang = (getattr(user, "language_code", "") or "").lower()
     is_hi = lang.startswith("hi")
 
@@ -93,12 +92,12 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         admin_extra = (
             "\nAdmin & Config:\n"
-            "/feature <name> on|off — Toggle features (owner)\n"
-            "/analytics — Usage counters (owner)\n"
+            "/feature <name> on|off — Toggle features\n"
+            "/analytics — Usage counters\n"
             "/setkey <NAME> <VALUE> — Set API keys/config\n"
         )
 
-    text = user_help + (admin_extra if is_owner else "")
+    text = user_help + admin_extra
     await update.message.reply_text(text)
 
 

@@ -46687,3 +46687,738 @@ Traceback (most recent call last):
   File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
     raise Conflict(message)
 telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:48:46,538 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:48:46,538 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:48:48,546 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:48:48,547 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:48:52,990 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:49:52 UTC)" (scheduled at 2025-08-18 16:48:52.986990+00:00)
+2025-08-18 16:48:52,990 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:49:52 UTC)" executed successfully
+2025-08-18 16:48:58,240 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:49:58 UTC)" (scheduled at 2025-08-18 16:48:58.228067+00:00)
+2025-08-18 16:48:58,240 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:53:58 UTC)" (scheduled at 2025-08-18 16:48:58.228498+00:00)
+2025-08-18 16:48:58,240 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:49:58 UTC)" executed successfully
+2025-08-18 16:48:58,240 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:53:58 UTC)" executed successfully
+2025-08-18 16:48:58,423 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:48:58,423 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:03,365 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:03 UTC)" (scheduled at 2025-08-18 16:49:03.363904+00:00)
+2025-08-18 16:49:03,366 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:03 UTC)" executed successfully
+2025-08-18 16:49:03,820 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:03,820 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:04,196 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:04,197 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:08,038 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:08,039 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:12,672 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:12,673 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:15,779 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:15,779 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:19,069 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:19,070 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:20,385 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:20 UTC)" (scheduled at 2025-08-18 16:49:20.361877+00:00)
+2025-08-18 16:49:20,385 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:20 UTC)" executed successfully
+[supervisor] starting bot at 2025-08-18T16:49:23+00:00
+2025-08-18 16:49:23,657 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-08-18 16:49:23,657 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-08-18 16:49:24,158 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getMe "HTTP/1.1 200 OK"
+2025-08-18 16:49:24,317 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/deleteWebhook "HTTP/1.1 200 OK"
+2025-08-18 16:49:24,318 - apscheduler.scheduler - INFO - Added job "periodic_save_job" to job store "default"
+2025-08-18 16:49:24,318 - apscheduler.scheduler - INFO - Added job "_push_news_job" to job store "default"
+2025-08-18 16:49:24,318 - apscheduler.scheduler - INFO - Scheduler started
+2025-08-18 16:49:24,318 - telegram.ext.Application - INFO - Application started
+2025-08-18 16:49:24,800 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:24,801 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:28,532 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:28 UTC)" (scheduled at 2025-08-18 16:49:28.527899+00:00)
+2025-08-18 16:49:28,533 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:54:28 UTC)" (scheduled at 2025-08-18 16:49:28.528301+00:00)
+2025-08-18 16:49:28,533 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:28 UTC)" executed successfully
+2025-08-18 16:49:28,533 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:54:28 UTC)" executed successfully
+2025-08-18 16:49:28,956 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:28,956 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:29,442 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:29 UTC)" (scheduled at 2025-08-18 16:49:29.427315+00:00)
+2025-08-18 16:49:29,443 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:29 UTC)" executed successfully
+2025-08-18 16:49:30,333 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:30 UTC)" (scheduled at 2025-08-18 16:49:30.325213+00:00)
+2025-08-18 16:49:30,333 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:54:30 UTC)" (scheduled at 2025-08-18 16:49:30.325626+00:00)
+2025-08-18 16:49:30,333 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:30 UTC)" executed successfully
+2025-08-18 16:49:30,334 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:54:30 UTC)" executed successfully
+2025-08-18 16:49:31,217 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:31 UTC)" (scheduled at 2025-08-18 16:49:31.189513+00:00)
+2025-08-18 16:49:31,217 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:54:31 UTC)" (scheduled at 2025-08-18 16:49:31.189920+00:00)
+2025-08-18 16:49:31,218 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 16:50:31 UTC)" executed successfully
+2025-08-18 16:49:31,218 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 16:54:31 UTC)" executed successfully
+2025-08-18 16:49:33,118 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:33,119 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-08-18 16:49:34,334 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 409 Conflict"
+2025-08-18 16:49:34,335 - root - ERROR - Exception while handling update:
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 753, in _network_loop_retry
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 747, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_updater.py", line 377, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 649, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 4366, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 623, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/ext/_extbot.py", line 355, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/_bot.py", line 652, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 201, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/telegram/request/_baserequest.py", line 384, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
