@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import re
+import json
 import base64
 from datetime import datetime
 from typing import Dict, Optional, Tuple
@@ -111,6 +112,17 @@ async def _http_post_json(url: str, payload: Dict, *, headers: Optional[Dict[str
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Handle deep-link referral payloads: /start ref_<inviter_id>
+    try:
+        if update.message and context.args:
+            payload = context.args[0]
+            if isinstance(payload, str) and payload.startswith("ref_"):
+                inviter_id_str = payload.replace("ref_", "", 1)
+                if inviter_id_str.isdigit():
+                    inviter_id = int(inviter_id_str)
+                    await credit_referral_if_applicable(inviter_id=inviter_id, new_user_id=update.effective_user.id if update.effective_user else 0)
+    except Exception as exc:
+        logger.warning("Failed to process referral payload: %s", exc)
     keyboard = [
         [InlineKeyboardButton("🚀 Growth Tips", callback_data="growth_tips")],
         [InlineKeyboardButton("📊 Member Analytics", callback_data="analytics")],
@@ -467,6 +479,82 @@ def build_application() -> Application:
     return Application.builder().token(BOT_TOKEN).defaults(defaults).build()
 
 
+# --- Simple JSON-file based referral store (demo-grade) ---
+REFERRAL_STORE_PATH = os.path.join(os.path.dirname(__file__), "referrals.json")
+
+
+def _load_referrals() -> Dict[str, Dict[str, int]]:
+    try:
+        with open(REFERRAL_STORE_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_referrals(data: Dict[str, Dict[str, int]]) -> None:
+    tmp = REFERRAL_STORE_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, REFERRAL_STORE_PATH)
+
+
+async def credit_referral_if_applicable(inviter_id: int, new_user_id: int) -> None:
+    if inviter_id <= 0 or new_user_id <= 0 or inviter_id == new_user_id:
+        return
+    data = _load_referrals()
+    inviter_key = str(inviter_id)
+    invited_set_key = f"invited_{inviter_key}"
+    invited = set(data.get(invited_set_key, {}))  # keys only
+    if str(new_user_id) in invited:
+        return
+    # Update inviter stats
+    stats = data.get(inviter_key, {"count": 0})
+    stats["count"] = int(stats.get("count", 0)) + 1
+    data[inviter_key] = stats
+    # Remember this invitee so we don't count twice
+    invited.add(str(new_user_id))
+    data[invited_set_key] = {k: 1 for k in invited}
+    _save_referrals(data)
+
+
+async def referral_link_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    if not user or not update.message:
+        return
+    # Deep link format: https://t.me/<bot_username>?start=ref_<user_id>
+    try:
+        me = await context.bot.get_me()
+        bot_username = me.username
+    except Exception:
+        bot_username = None
+    if not bot_username:
+        await update.message.reply_text("Could not determine bot username.")
+        return
+    link = f"https://t.me/{bot_username}?start=ref_{user.id}"
+    await update.message.reply_text(
+        "🔗 "
+        + _bold("Your referral link")
+        + "\n\nShare this to invite friends.\n"
+        + link
+    )
+
+
+async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message:
+        return
+    data = _load_referrals()
+    entries = [(int(uid), v.get("count", 0)) for uid, v in data.items() if uid.isdigit()]
+    entries.sort(key=lambda x: x[1], reverse=True)
+    top = entries[:10]
+    if not top:
+        await update.message.reply_text("No referrals yet. Use /referral to get your link.")
+        return
+    lines = ["🏆 " + _bold("Referral Leaderboard") + "\n"]
+    for rank, (uid, count) in enumerate(top, start=1):
+        lines.append(f"{rank}. User {uid}: {count}")
+    await update.message.reply_text("\n".join(lines))
+
+
 def main() -> None:
     application = build_application()
 
@@ -479,6 +567,8 @@ def main() -> None:
     application.add_handler(CommandHandler("headers", headers_command))
     application.add_handler(CommandHandler("securitynews", security_news_command))
     application.add_handler(CommandHandler("disclose", disclose_command))
+    application.add_handler(CommandHandler("referral", referral_link_command))
+    application.add_handler(CommandHandler("leaderboard", leaderboard_command))
 
     # Buttons
     application.add_handler(CallbackQueryHandler(handle_button))

@@ -44,3 +44,5 @@ python bot.py
 - `/headers <url>` — Audits common security headers and recommends fixes.
 - `/securitynews` — Latest items from CISA Known Exploited Vulnerabilities feed.
 - `/disclose` — Responsible disclosure guide and email template.
+- `/referral` — Get your personal deep-link referral URL.
+- `/leaderboard` — Top inviters by successful referrals.
