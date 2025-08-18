@@ -35,19 +35,36 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Here are the commands you can use:\n"
-        "/start - Start the bot\n"
-        "/help - Show this help message\n"
-        "/add <your_data> - Add data to your secure store\n"
-        "/get - Get your stored data\n"
-        "/setkey <your_key> - Set your secure key (optional)\n"
-        "/status - Show bot status\n"
-        "/ai - Start AI chat\n"
-        "/img - Generate image (requires DALL-E)\n"
-        "/web - Search the web (requires Google Custom Search)\n"
-        "/code - Generate code (requires GitHub)\n"
-        "/voice - Transcribe voice message\n"
-        "You can also send photos or text messages."
+        "Available commands:\n"
+        "\n"
+        "Core:\n"
+        "/start — Welcome message\n"
+        "/help, /commands — This help\n"
+        "/status, /health — Bot status & liveness\n"
+        "\n"
+        "AI:\n"
+        "/ai <prompt> — Chat with AI (streaming)\n"
+        "/ask <question> — Fresh web context + answer\n"
+        "/img <prompt> — Image generation (Gemini)\n"
+        "\n"
+        "Search & News:\n"
+        "/web <query> — Web search (CSE→Tavily→SerpAPI)\n"
+        "/news [SYMS] — Latest headlines (e.g., AAPL,TSLA)\n"
+        "/subscribe_news [SYMS] [minutes] — Push updates\n"
+        "/unsubscribe_news — Stop pushes\n"
+        "/newsportal — Portal link\n"
+        "\n"
+        "Voice & Vision:\n"
+        "/tts <text> — Text to speech\n"
+        "/ocr — Send/reply with an image to extract text\n"
+        "\n"
+        "Personalization:\n"
+        "/persona set <name> | /persona list — Persona modes\n"
+        "\n"
+        "Admin & Config:\n"
+        "/feature <name> on|off — Toggle features (owner)\n"
+        "/analytics — Usage counters (owner)\n"
+        "/setkey <NAME> <VALUE> — Set API keys/config"
     )
 
 
@@ -1021,6 +1038,7 @@ def main():
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("commands", help_command))
     application.add_handler(CommandHandler("add", add_data))
     application.add_handler(CommandHandler("get", get_data))
     application.add_handler(CommandHandler("setkey", setkey_command))
