@@ -100,6 +100,10 @@ def get_tavily_client():
     return TavilyClient(api_key=api_key)
 
 
+def get_serpapi_key() -> str:
+    return os.environ.get("SERPAPI_KEY", "").strip()
+
+
 def append_user_message(history: List[Dict[str, Any]], text: str) -> None:
     history.append({"role": "user", "content": text})
 
@@ -277,22 +281,47 @@ async def voice_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --------- Web search ---------
 async def web_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    import httpx
     tc = get_tavily_client()
-    if not tc:
-        await update.message.reply_text("Set TAVILY_API_KEY to enable web search.")
-        return
+    serpapi_key = get_serpapi_key()
     query = " ".join(context.args) if context.args else ""
     if not query:
         await update.message.reply_text("Usage: /web <query>")
         return
     try:
-        results = tc.search(query=query, search_depth="advanced", max_results=5)
-        sources = results.get("results", [])
-        summary = results.get("answer", "") or results.get("raw_content", "")
-        if not summary:
-            summary = "\n".join([s.get("content", "") for s in sources])[:1500]
-        text = f"🔎 {query}\n\n{summary[:3500]}\n\n" + "\n".join([f"- {s.get('title','')}" for s in sources[:5]])
-        await update.message.reply_text(text[:4096], disable_web_page_preview=True)
+        if tc:
+            results = tc.search(query=query, search_depth="advanced", max_results=5)
+            sources = results.get("results", [])
+            summary = results.get("answer", "") or results.get("raw_content", "")
+            if not summary:
+                summary = "\n".join([s.get("content", "") for s in sources])[:1500]
+            text = f"🔎 {query}\n\n{summary[:3500]}\n\n" + "\n".join([f"- {s.get('title','')}" for s in sources[:5]])
+            await update.message.reply_text(text[:4096], disable_web_page_preview=True)
+            return
+
+        if serpapi_key:
+            params = {
+                "engine": "google",
+                "q": query,
+                "api_key": serpapi_key,
+                "num": "5",
+            }
+            async with httpx.AsyncClient(timeout=20) as client:
+                resp = await client.get("https://serpapi.com/search.json", params=params)
+                resp.raise_for_status()
+                data = resp.json()
+            organic = data.get("organic_results", [])
+            lines = []
+            for item in organic[:5]:
+                title = item.get("title", "")
+                link = item.get("link", "")
+                snippet = item.get("snippet", "")
+                lines.append(f"- {title}\n{snippet}\n{link}")
+            body = "\n\n".join(lines) or "No results."
+            await update.message.reply_text(f"🔎 {query}\n\n{body}"[:4096], disable_web_page_preview=True)
+            return
+
+        await update.message.reply_text("Set TAVILY_API_KEY or SERPAPI_KEY to enable web search.")
     except Exception as e:
         logging.exception("Web search error: %s", e)
         await update.message.reply_text("❌ Web search failed.")
