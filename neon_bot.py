@@ -1,11 +1,17 @@
 import os
+import io
+import base64
+import asyncio
 import logging
-from telegram import Update
+from typing import List, Dict, Any
+from telegram import Update, InputFile
 from telegram.ext import (
     Application,
     CommandHandler,
     ContextTypes,
     AIORateLimiter,
+    MessageHandler,
+    filters,
 )
 
 
@@ -25,7 +31,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_html(
         f"👋 Hi {user.mention_html()}! I'm {BOT_USERNAME}.\n"
         "Use /add <data> to store information (in-memory only)\n"
-        "Use /get to retrieve your data (session-only)"
+        "Use /get to retrieve your data (session-only)\n\n"
+        "AI features:\n"
+        "• /ai <prompt> — advanced AI chat (also replies to plain text)\n"
+        "• Send an image with caption 'describe' — vision Q&A\n"
+        "• /img <prompt> — image generation\n"
+        "• Send a voice note — transcription\n"
+        "• /code <lang> <code> — run code in sandbox\n"
+        "• /web <query> — web search + summary"
     )
 
 
@@ -64,6 +77,275 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
             pass
 
 
+# --------- AI provider utils ---------
+def get_openai_client():
+    try:
+        from openai import OpenAI
+    except Exception:
+        return None
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return None
+    return OpenAI(api_key=api_key)
+
+
+def get_tavily_client():
+    try:
+        from tavily import TavilyClient
+    except Exception:
+        return None
+    api_key = os.environ.get("TAVILY_API_KEY")
+    if not api_key:
+        return None
+    return TavilyClient(api_key=api_key)
+
+
+def append_user_message(history: List[Dict[str, Any]], text: str) -> None:
+    history.append({"role": "user", "content": text})
+
+
+def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
+    user_data = context.user_data
+    if "history" not in user_data:
+        user_data["history"] = []
+    # Trim to last 10 exchanges
+    if len(user_data["history"]) > 20:
+        user_data["history"] = user_data["history"][-20:]
+    return user_data["history"]
+
+
+# --------- AI chat (with streaming edits) ---------
+async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt: str):
+    client = get_openai_client()
+    if not client:
+        await update.message.reply_text("Set OPENAI_API_KEY to enable AI chat.")
+        return
+
+    history = ensure_history(context)
+    append_user_message(history, prompt)
+
+    # Send placeholder message for streaming edits
+    placeholder = await update.message.reply_text("🤖 Thinking…")
+
+    content_chunks: List[str] = []
+
+    try:
+        stream = client.chat.completions.create(
+            model=os.environ.get("OPENAI_CHAT_MODEL", "gpt-4o-mini"),
+            messages=history,
+            stream=True,
+            temperature=0.4,
+        )
+
+        last_edit = ""
+        async def periodic_edit():
+            nonlocal last_edit
+            while True:
+                await asyncio.sleep(0.6)
+                joined = "".join(content_chunks).strip()
+                if joined and joined != last_edit:
+                    try:
+                        await placeholder.edit_text(joined[:4096])
+                        last_edit = joined
+                    except Exception:
+                        pass
+
+        edit_task = asyncio.create_task(periodic_edit())
+
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content or ""
+            if delta:
+                content_chunks.append(delta)
+
+        edit_task.cancel()
+
+        final_text = "".join(content_chunks).strip()
+        # Save assistant reply to history
+        history.append({"role": "assistant", "content": final_text})
+
+        if final_text:
+            # Ensure final text is applied
+            await placeholder.edit_text(final_text[:4096])
+        else:
+            await placeholder.edit_text("(no content)")
+
+    except Exception as e:
+        logging.exception("AI chat error: %s", e)
+        try:
+            await placeholder.edit_text("❌ AI error. Try again later.")
+        except Exception:
+            pass
+
+
+async def ai_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    prompt = " ".join(context.args) if context.args else ""
+    if not prompt:
+        await update.message.reply_text("Usage: /ai <prompt>")
+        return
+    await handle_ai_chat(update, context, prompt)
+
+
+# --------- Vision on photo ---------
+async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    client = get_openai_client()
+    if not client:
+        return
+    if not update.message or not update.message.photo:
+        return
+    # Prefer largest size
+    file_id = update.message.photo[-1].file_id
+    tf = await context.bot.get_file(file_id)
+    # We can send the file URL directly to OpenAI vision
+    image_url = tf.file_path
+
+    question = update.message.caption or "Describe this image."
+
+    messages = [
+        {"role": "user", "content": [
+            {"type": "input_text", "text": question},
+            {"type": "input_image", "image_url": image_url},
+        ]}
+    ]
+
+    try:
+        resp = client.chat.completions.create(
+            model=os.environ.get("OPENAI_VISION_MODEL", "gpt-4o-mini"),
+            messages=messages,
+            temperature=0.2,
+        )
+        answer = resp.choices[0].message.content.strip()
+        await update.message.reply_text(answer[:4096])
+    except Exception as e:
+        logging.exception("Vision error: %s", e)
+        await update.message.reply_text("❌ Vision failed.")
+
+
+# --------- Image generation ---------
+async def img_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    client = get_openai_client()
+    if not client:
+        await update.message.reply_text("Set OPENAI_API_KEY to enable image generation.")
+        return
+    prompt = " ".join(context.args) if context.args else ""
+    if not prompt:
+        await update.message.reply_text("Usage: /img <prompt>")
+        return
+
+    try:
+        img = client.images.generate(
+            model=os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1"),
+            prompt=prompt,
+            size=os.environ.get("OPENAI_IMAGE_SIZE", "1024x1024"),
+        )
+        b64 = img.data[0].b64_json
+        data = base64.b64decode(b64)
+        bio = io.BytesIO(data)
+        bio.name = "image.png"
+        await update.message.reply_photo(photo=InputFile(bio, filename="image.png"), caption=f"🎨 {prompt[:200]}")
+    except Exception as e:
+        logging.exception("Image generation error: %s", e)
+        await update.message.reply_text("❌ Image generation failed.")
+
+
+# --------- Voice transcription ---------
+async def voice_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    client = get_openai_client()
+    if not client:
+        return
+    voice = update.message.voice or update.message.audio
+    if not voice:
+        return
+    tf = await context.bot.get_file(voice.file_id)
+    # Download into memory
+    file_bytes = await tf.download_as_bytearray()
+    bio = io.BytesIO(file_bytes)
+    bio.name = "audio.ogg"
+    try:
+        tr = client.audio.transcriptions.create(
+            model=os.environ.get("OPENAI_TRANSCRIBE_MODEL", "gpt-4o-transcribe"),
+            file=bio,
+            response_format="text",
+        )
+        text = tr.strip() if isinstance(tr, str) else getattr(tr, "text", "").strip()
+        if not text:
+            text = "(empty transcription)"
+        await update.message.reply_text(f"🗣️ {text[:4000]}")
+    except Exception as e:
+        logging.exception("Transcription error: %s", e)
+        await update.message.reply_text("❌ Transcription failed.")
+
+
+# --------- Web search ---------
+async def web_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tc = get_tavily_client()
+    if not tc:
+        await update.message.reply_text("Set TAVILY_API_KEY to enable web search.")
+        return
+    query = " ".join(context.args) if context.args else ""
+    if not query:
+        await update.message.reply_text("Usage: /web <query>")
+        return
+    try:
+        results = tc.search(query=query, search_depth="advanced", max_results=5)
+        sources = results.get("results", [])
+        summary = results.get("answer", "") or results.get("raw_content", "")
+        if not summary:
+            summary = "\n".join([s.get("content", "") for s in sources])[:1500]
+        text = f"🔎 {query}\n\n{summary[:3500]}\n\n" + "\n".join([f"- {s.get('title','')}" for s in sources[:5]])
+        await update.message.reply_text(text[:4096], disable_web_page_preview=True)
+    except Exception as e:
+        logging.exception("Web search error: %s", e)
+        await update.message.reply_text("❌ Web search failed.")
+
+
+# --------- Code execution via Piston ---------
+async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    import httpx
+    if not context.args or len(context.args) < 2:
+        await update.message.reply_text("Usage: /code <lang> <code>")
+        return
+    lang = context.args[0]
+    code = " ".join(context.args[1:])
+    # Strip backticks if present
+    if code.startswith("```"):
+        code = code.strip("`\n ")
+        # Remove possible language hint
+        first_newline = code.find("\n")
+        if first_newline != -1:
+            head = code[:first_newline]
+            if len(head) < 12:
+                code = code[first_newline + 1 :]
+    payload = {
+        "language": lang,
+        "files": [{"name": f"main.{lang}", "content": code}],
+    }
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post("https://emkc.org/api/v2/piston/execute", json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+        run = data.get("run", {})
+        out = run.get("stdout", "")
+        err = run.get("stderr", "")
+        if not out and not err:
+            out = "(no output)"
+        text = (out + ("\n" + err if err else "")).strip()
+        await update.message.reply_text(f"🧪 Output:\n{text[:4000]}")
+    except Exception as e:
+        logging.exception("Code exec error: %s", e)
+        await update.message.reply_text("❌ Code execution failed.")
+
+
+# --------- Fallback text handler to AI ---------
+async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message or not update.message.text:
+        return
+    # Ignore commands (handled separately)
+    if update.message.text.strip().startswith("/"):
+        return
+    await handle_ai_chat(update, context, update.message.text.strip())
+
+
 def main():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN environment variable is not set")
@@ -78,8 +360,16 @@ def main():
 
     # Register handlers
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", start))
     application.add_handler(CommandHandler("add", add_data))
     application.add_handler(CommandHandler("get", get_data))
+    application.add_handler(CommandHandler("ai", ai_command))
+    application.add_handler(CommandHandler("img", img_command))
+    application.add_handler(CommandHandler("web", web_command))
+    application.add_handler(CommandHandler("code", code_command))
+    application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
+    application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_handler))
     application.add_error_handler(error_handler)
 
     # Start bot with low-latency long polling and no disk persistence
