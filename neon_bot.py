@@ -413,6 +413,79 @@ async def news_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Failed to fetch news.")
 
 
+async def subscribe_news_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Usage: /subscribe_news [AAPL,TSLA] [minutes]
+    symbols = None
+    interval_min = 30
+    if context.args:
+        parts = " ".join(context.args).split()
+        if parts:
+            if "," in parts[0] or parts[0].isalpha():
+                symbols = [s.strip().upper() for s in parts[0].split(",") if s.strip()]
+                parts = parts[1:]
+        if parts:
+            try:
+                interval_min = max(5, int(parts[0]))
+            except Exception:
+                pass
+    entry = _get_user_entry(context, update.effective_user.id)
+    entry.setdefault("news_sub", {})
+    if symbols:
+        entry["news_sub"]["symbols"] = symbols
+    entry["news_sub"]["interval_min"] = interval_min
+    save_store(context)
+    await update.message.reply_text(f"✅ Subscribed to news every {interval_min}m for symbols: {','.join(symbols or entry['news_sub'].get('symbols', ['AAPL','MSFT']))}")
+
+
+async def unsubscribe_news_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    entry = _get_user_entry(context, update.effective_user.id)
+    if "news_sub" in entry:
+        entry.pop("news_sub", None)
+        save_store(context)
+        await update.message.reply_text("🛑 Unsubscribed from news updates.")
+    else:
+        await update.message.reply_text("You are not subscribed.")
+
+
+async def _push_news_job(context: ContextTypes.DEFAULT_TYPE):
+    import httpx
+    app = context.application
+    store = _ensure_store_root(context)
+    api_key = _get_runtime_key(context, "NEWS_API_KEY")
+    if not api_key:
+        return
+    for uid, udata in store.get("users", {}).items():
+        sub = udata.get("news_sub")
+        if not sub:
+            continue
+        symbols = sub.get("symbols") or [s.strip().upper() for s in os.environ.get("NEWS_SYMBOLS", "AAPL,MSFT").split(",") if s.strip()]
+        limit = int(os.environ.get("NEWS_MAX_RESULTS", "5") or 5)
+        params = {"symbols": ",".join(symbols), "limit": str(limit), "sort": "newest"}
+        headers = {"X-Api-Key": api_key}
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                resp = await client.get(get_news_endpoint(), params=params, headers=headers)
+                resp.raise_for_status()
+                data = resp.json()
+            items = []
+            if isinstance(data, dict):
+                items = data.get("articles") or data.get("news") or []
+            elif isinstance(data, list):
+                items = data
+            if not items:
+                continue
+            first = items[0]
+            title = first.get("title", "(untitled)") if isinstance(first, dict) else str(first)
+            url = (first.get("url") if isinstance(first, dict) else "") or ""
+            msg = f"📰 Latest: {title}\n{url}" if url else f"📰 Latest: {title}"
+            try:
+                await app.bot.send_message(chat_id=int(uid), text=msg)
+            except Exception:
+                pass
+        except Exception:
+            continue
+
+
 def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
     user_data = context.user_data
     if "history" not in user_data:
@@ -421,6 +494,80 @@ def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
     if len(user_data["history"]) > 20:
         user_data["history"] = user_data["history"][-20:]
     return user_data["history"]
+
+
+def _aggregate_web_content(context: ContextTypes.DEFAULT_TYPE, query: str) -> str:
+    import httpx
+    gkey = get_google_cse_key(context)
+    gcx = get_google_cse_cx(context)
+    tc = get_tavily_client(context)
+    serpapi_key = get_serpapi_key(context)
+    try:
+        if gkey and gcx:
+            params = {"key": gkey, "cx": gcx, "q": query, "num": 5}
+            with httpx.Client(timeout=15) as client:
+                resp = client.get("https://www.googleapis.com/customsearch/v1", params=params)
+                resp.raise_for_status()
+                data = resp.json()
+            items = data.get("items", [])
+            snippets = []
+            for it in items[:5]:
+                title = it.get("title", "")
+                snippet = it.get("snippet", "")
+                link = it.get("link", "")
+                snippets.append(f"{title}\n{snippet}\n{link}")
+            return "\n\n".join(snippets)
+        if tc:
+            results = tc.search(query=query, search_depth="advanced", max_results=5)
+            sources = results.get("results", [])
+            if sources:
+                return "\n\n".join([s.get("content", "") for s in sources[:5]])
+        if serpapi_key:
+            params = {"engine": "google", "q": query, "api_key": serpapi_key, "num": "5"}
+            with httpx.Client(timeout=15) as client:
+                resp = client.get("https://serpapi.com/search.json", params=params)
+                resp.raise_for_status()
+                data = resp.json()
+            organic = data.get("organic_results", [])
+            lines = []
+            for it in organic[:5]:
+                title = it.get("title", "")
+                snippet = it.get("snippet", "")
+                link = it.get("link", "")
+                lines.append(f"{title}\n{snippet}\n{link}")
+            return "\n\n".join(lines)
+    except Exception:
+        pass
+    return ""
+
+
+async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    prompt = " ".join(context.args) if context.args else ""
+    if not prompt:
+        await update.message.reply_text("Usage: /ask <question>")
+        return
+    fresh_context = _aggregate_web_content(context, prompt)
+    client = get_openai_client(context)
+    if not client:
+        await update.message.reply_text("Set OPENAI_API_KEY (and optionally web keys) to enable /ask.")
+        return
+    messages: List[Dict[str, Any]] = [
+        {"role": "system", "content": "You answer with up-to-date info. Prefer the provided snippets; if unsure, say so."},
+    ]
+    if fresh_context:
+        messages.append({"role": "system", "content": f"Snippets:\n{fresh_context}"})
+    messages.append({"role": "user", "content": prompt})
+    try:
+        resp = client.chat.completions.create(
+            model=os.environ.get("OPENAI_CHAT_MODEL", "gpt-4o-mini"),
+            messages=messages,
+            temperature=0.2,
+        )
+        text = resp.choices[0].message.content.strip()
+        await update.message.reply_text(text[:4096])
+    except Exception as e:
+        logging.exception("/ask error: %s", e)
+        await update.message.reply_text("❌ Failed to answer.")
 
 
 async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt: str):
@@ -593,6 +740,7 @@ def main():
     load_store_eager(application)
     try:
         application.job_queue.run_repeating(periodic_save_job, interval=60, first=60)
+        application.job_queue.run_repeating(_push_news_job, interval=300, first=120)
     except Exception:
         pass
 
@@ -606,6 +754,9 @@ def main():
     application.add_handler(CommandHandler("img", img_command))
     application.add_handler(CommandHandler("web", web_command))
     application.add_handler(CommandHandler("news", news_command))
+    application.add_handler(CommandHandler("ask", ask_command))
+    application.add_handler(CommandHandler("subscribe_news", subscribe_news_command))
+    application.add_handler(CommandHandler("unsubscribe_news", unsubscribe_news_command))
     application.add_handler(CommandHandler("code", code_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
