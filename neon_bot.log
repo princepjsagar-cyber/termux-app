@@ -8,3 +8,5 @@ nohup: ignoring input
 2025-08-18 13:22:02,421 - apscheduler.scheduler - INFO - Scheduler started
 2025-08-18 13:22:02,421 - telegram.ext.Application - INFO - Application started
 2025-08-18 13:22:12,905 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:22:23,065 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:22:33,226 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
