@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Search Bot Web</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>AI Search Bot Web</h1>
+    <form id="search-form">
+      <input type="text" id="query" placeholder="Search the web..." required />
+      <button>Search</button>
+    </form>
+    <div id="results"></div>
+    <hr />
+    <form id="news-form">
+      <input type="number" id="limit" min="1" max="10" value="3" />
+      <button>AI News</button>
+    </form>
+    <div id="news"></div>
+    <hr />
+    <form id="ask-form">
+      <input type="text" id="question" placeholder="Ask a question..." />
+      <button>Ask</button>
+    </form>
+    <div id="answer"></div>
+  </div>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const renderItems = (items) => items.map(i => `
+      <div class="item">
+        <div class="title"><a href="${i.link}" target="_blank">${i.title}</a></div>
+        <div class="snippet">${i.snippet || ''}</div>
+      </div>`).join('');
+    $('#search-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(); fd.append('query', $('#query').value);
+      const res = await fetch('/api/search', { method: 'POST', body: fd });
+      const data = await res.json();
+      $('#results').innerHTML = renderItems(data.items || []);
+    });
+    $('#news-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(); fd.append('limit', $('#limit').value);
+      const res = await fetch('/api/news', { method: 'POST', body: fd });
+      const data = await res.json();
+      $('#news').innerHTML = renderItems(data.items || []);
+    });
+    $('#ask-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(); fd.append('question', $('#question').value);
+      const res = await fetch('/api/ask', { method: 'POST', body: fd });
+      const data = await res.json();
+      $('#answer').textContent = data.answer || 'No answer';
+    });
+  </script>
+</body>
+</html>
+
