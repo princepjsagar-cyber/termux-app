@@ -55,11 +55,11 @@ async def setkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Please provide a key: /setkey <name> <value>")
         return
     if len(args) < 2:
-        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|GEMINI_API_KEY|BOT_DATA_KEY> <value>")
+        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|GEMINI_API_KEY|NEWS_API_KEY|BOT_DATA_KEY> <value>")
         return
     name = args[0].strip().upper()
     value = " ".join(args[1:]).strip()
-    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "GEMINI_API_KEY", "BOT_DATA_KEY"}
+    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "GEMINI_API_KEY", "NEWS_API_KEY", "BOT_DATA_KEY"}
     if name not in allowed:
         await update.message.reply_text("Key must be one of: " + ", ".join(sorted(allowed)))
         return
@@ -78,7 +78,8 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• SERPAPI_KEY: {'Set' if _get_runtime_key(context, 'SERPAPI_KEY') else 'Not Set'}\n"
         f"• GOOGLE_CSE_API_KEY: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_API_KEY') else 'Not Set'}\n"
         f"• GOOGLE_CSE_CX: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_CX') else 'Not Set'}\n"
-        f"• GEMINI_API_KEY: {'Set' if _get_runtime_key(context, 'GEMINI_API_KEY') else 'Not Set'}"
+        f"• GEMINI_API_KEY: {'Set' if _get_runtime_key(context, 'GEMINI_API_KEY') else 'Not Set'}\n"
+        f"• NEWS_API_KEY: {'Set' if _get_runtime_key(context, 'NEWS_API_KEY') else 'Not Set'}"
     )
 
 
@@ -353,6 +354,64 @@ def get_google_cse_cx(context: ContextTypes.DEFAULT_TYPE) -> str:
 def get_gemini_key(context: ContextTypes.DEFAULT_TYPE) -> str:
     return _get_runtime_key(context, "GEMINI_API_KEY")
 
+def get_news_api_key(context: ContextTypes.DEFAULT_TYPE) -> str:
+    return _get_runtime_key(context, "NEWS_API_KEY")
+
+def get_news_endpoint() -> str:
+    return os.environ.get("NEWS_API_ENDPOINT", "https://api.example-news.io/v3/realtime").strip()
+
+async def news_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    import httpx
+    api_key = get_news_api_key(context)
+    if not api_key:
+        await update.message.reply_text("Set NEWS_API_KEY with /setkey NEWS_API_KEY <key>.")
+        return
+    # Symbols can be provided as args or from env; default AAPL,MSFT
+    symbols_arg = "".join(context.args).strip() if context.args else ""
+    if symbols_arg:
+        symbols = [s.strip().upper() for s in symbols_arg.split(",") if s.strip()]
+    else:
+        symbols = [s.strip().upper() for s in os.environ.get("NEWS_SYMBOLS", "AAPL,MSFT").split(",") if s.strip()]
+    limit = int(os.environ.get("NEWS_MAX_RESULTS", "8") or 8)
+    params = {"symbols": ",".join(symbols), "limit": str(limit), "sort": "newest"}
+    headers = {"X-Api-Key": api_key}
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.get(get_news_endpoint(), params=params, headers=headers)
+            resp.raise_for_status()
+            data = resp.json()
+        # Accept both shapes: {articles: [...]} or {news: [...]} or direct list
+        items = []
+        if isinstance(data, dict):
+            items = data.get("articles") or data.get("news") or []
+        elif isinstance(data, list):
+            items = data
+        if not items:
+            await update.message.reply_text("No news found.")
+            return
+        lines = []
+        for it in items[:limit]:
+            title = (it.get("title") if isinstance(it, dict) else str(it)) or "(untitled)"
+            url = (it.get("url") if isinstance(it, dict) else "") or ""
+            src = ""
+            if isinstance(it, dict):
+                src_obj = it.get("source") or {}
+                if isinstance(src_obj, dict):
+                    src = src_obj.get("name", "")
+                elif isinstance(src_obj, str):
+                    src = src_obj
+            line = f"• {title}"
+            if src:
+                line += f" — {src}"
+            if url:
+                line += f"\n{url}"
+            lines.append(line)
+        text = "\n\n".join(lines)
+        await update.message.reply_text(text[:4096], disable_web_page_preview=False)
+    except Exception as e:
+        logging.exception("News fetch error: %s", e)
+        await update.message.reply_text("❌ Failed to fetch news.")
+
 
 def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
     user_data = context.user_data
@@ -546,6 +605,7 @@ def main():
     application.add_handler(CommandHandler("ai", ai_command))
     application.add_handler(CommandHandler("img", img_command))
     application.add_handler(CommandHandler("web", web_command))
+    application.add_handler(CommandHandler("news", news_command))
     application.add_handler(CommandHandler("code", code_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
