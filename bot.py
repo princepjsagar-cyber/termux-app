@@ -2,6 +2,10 @@ import os
 import html
 import time
 import json
+import logging
+import sqlite3
+import shutil
+from datetime import datetime
 import threading
 from typing import Dict, List, Optional, Tuple
 
@@ -20,6 +24,9 @@ SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")  # Google CSE 'cx' value
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")  # Optional fallback
 
 DATA_DIR = os.getenv("DATA_DIR", "/workspace/data")
+BACKUP_DIR = os.getenv("BACKUP_DIR", "/workspace/backups")
+BACKUP_INTERVAL_HOURS = int(os.getenv("BACKUP_INTERVAL_HOURS", "24"))
+BACKUP_KEEP = int(os.getenv("BACKUP_KEEP", "7"))
 
 if not TELEGRAM_TOKEN:
     raise RuntimeError("Missing environment variable: TELEGRAM_TOKEN")
@@ -40,6 +47,81 @@ bot = TeleBot(TELEGRAM_TOKEN, parse_mode="HTML")
 _state_lock = threading.Lock()
 _chat_state: Dict[int, Dict[str, object]] = {}
 _last_request_ts: Dict[int, float] = {}
+
+
+def _ensure_dirs() -> None:
+    try:
+        os.makedirs(DATA_DIR, exist_ok=True)
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+    except Exception:
+        pass
+
+
+def _setup_logging() -> None:
+    _ensure_dirs()
+    log_path = os.path.join(DATA_DIR, "bot.log")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(log_path, encoding="utf-8"),
+        ],
+    )
+
+
+def _db_path() -> str:
+    return os.path.join(DATA_DIR, "bot.db")
+
+
+def _init_db() -> None:
+    _ensure_dirs()
+    with sqlite3.connect(_db_path()) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS queries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts INTEGER NOT NULL,
+                chat_id INTEGER NOT NULL,
+                query TEXT NOT NULL
+            )
+            """
+        )
+        conn.commit()
+
+
+def _db_count_queries(conn: sqlite3.Connection) -> int:
+    cur = conn.execute("SELECT COUNT(1) FROM queries")
+    row = cur.fetchone()
+    return int(row[0]) if row and row[0] is not None else 0
+
+
+def _migrate_from_jsonl_if_needed() -> None:
+    jsonl_path = os.path.join(DATA_DIR, "queries.jsonl")
+    if not os.path.exists(jsonl_path):
+        return
+    try:
+        with sqlite3.connect(_db_path()) as conn:
+            if _db_count_queries(conn) > 0:
+                return
+            to_insert: List[Tuple[int, int, str]] = []
+            with open(jsonl_path, "r", encoding="utf-8") as fh:
+                for line in fh:
+                    try:
+                        rec = json.loads(line)
+                        ts = int(rec.get("ts", int(time.time())))
+                        chat_id = int(rec.get("chat_id", 0))
+                        query = str(rec.get("query", "")).strip()
+                        if chat_id and query:
+                            to_insert.append((ts, chat_id, query))
+                    except Exception:
+                        continue
+            if to_insert:
+                conn.executemany("INSERT INTO queries (ts, chat_id, query) VALUES (?, ?, ?)", to_insert)
+                conn.commit()
+                logging.info("Migrated %s records from JSONL to SQLite", len(to_insert))
+    except Exception as exc:
+        logging.warning("Migration from JSONL failed: %s", exc)
 
 
 def _rate_limited(chat_id: int, min_interval_seconds: float = 1.5) -> bool:
@@ -163,19 +245,21 @@ def handle_start(message: Message) -> None:
 
 
 def _ensure_data_dir() -> None:
-    try:
-        os.makedirs(DATA_DIR, exist_ok=True)
-    except Exception:
-        pass
+    _ensure_dirs()
 
 
 def _log_query(chat_id: int, query: str) -> None:
-    _ensure_data_dir()
-    record = {
-        "ts": int(time.time()),
-        "chat_id": chat_id,
-        "query": query,
-    }
+    _ensure_dirs()
+    ts = int(time.time())
+    # Append to SQLite
+    try:
+        with sqlite3.connect(_db_path()) as conn:
+            conn.execute("INSERT INTO queries (ts, chat_id, query) VALUES (?, ?, ?)", (ts, chat_id, query))
+            conn.commit()
+    except Exception as exc:
+        logging.warning("Failed to write to DB: %s", exc)
+    # Also append to JSONL for redundancy
+    record = {"ts": ts, "chat_id": chat_id, "query": query}
     try:
         with open(os.path.join(DATA_DIR, "queries.jsonl"), "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -184,6 +268,19 @@ def _log_query(chat_id: int, query: str) -> None:
 
 
 def _read_recent_queries(chat_id: int, limit: int = 5) -> List[dict]:
+    # Prefer DB for reads
+    try:
+        with sqlite3.connect(_db_path()) as conn:
+            cur = conn.execute(
+                "SELECT ts, query FROM queries WHERE chat_id = ? ORDER BY id DESC LIMIT ?",
+                (chat_id, limit),
+            )
+            rows = cur.fetchall()
+            rows.reverse()
+            return [{"ts": ts, "chat_id": chat_id, "query": query} for (ts, query) in rows]
+    except Exception:
+        pass
+    # Fallback to JSONL
     path = os.path.join(DATA_DIR, "queries.jsonl")
     if not os.path.exists(path):
         return []
@@ -223,6 +320,36 @@ def handle_recent(message: Message) -> None:
         q = html.escape(str(r.get("query", "")))
         lines.append(f"• {ts}: {q}")
     bot.reply_to(message, "\n".join(lines))
+
+
+def _backup_db() -> None:
+    src = _db_path()
+    if not os.path.exists(src):
+        return
+    try:
+        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        dst = os.path.join(BACKUP_DIR, f"bot_{ts}.db")
+        shutil.copy2(src, dst)
+        # Rotate old backups
+        backups = sorted([f for f in os.listdir(BACKUP_DIR) if f.endswith('.db')])
+        if len(backups) > BACKUP_KEEP:
+            for old in backups[: len(backups) - BACKUP_KEEP]:
+                try:
+                    os.remove(os.path.join(BACKUP_DIR, old))
+                except Exception:
+                    pass
+        logging.info("Backup created: %s", dst)
+    except Exception as exc:
+        logging.warning("Backup failed: %s", exc)
+
+
+def _backup_worker() -> None:
+    while True:
+        try:
+            _backup_db()
+        except Exception:
+            pass
+        time.sleep(max(3600, BACKUP_INTERVAL_HOURS * 3600))
 
 
 @bot.message_handler(func=lambda m: bool(m.text and m.text.strip()))  # type: ignore[arg-type]
@@ -298,8 +425,28 @@ def handle_more(callback: CallbackQuery) -> None:
 
 
 def main() -> None:
-    print("Bot is running...")
-    bot.infinity_polling(timeout=20, long_polling_timeout=20, allowed_updates=["message", "callback_query"], skip_pending=True)
+    _setup_logging()
+    logging.info("Starting bot...")
+    _init_db()
+    _migrate_from_jsonl_if_needed()
+
+    # Start backup thread
+    t = threading.Thread(target=_backup_worker, name="backup-worker", daemon=True)
+    t.start()
+
+    # Resilient polling loop to run 24/7
+    while True:
+        try:
+            bot.infinity_polling(
+                timeout=20,
+                long_polling_timeout=20,
+                allowed_updates=["message", "callback_query"],
+                skip_pending=True,
+            )
+        except Exception as exc:
+            logging.error("Polling crashed: %s", exc)
+            time.sleep(3)
+            continue
 
 
 if __name__ == "__main__":
