@@ -10,6 +10,8 @@ import threading
 from typing import Dict, List, Optional, Tuple
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
@@ -50,13 +52,64 @@ if not (has_google or has_serpapi):
     )
 
 
-bot = TeleBot(TELEGRAM_TOKEN, parse_mode="HTML")
+BOT_THREADS = int(os.getenv("BOT_THREADS", "8"))
+bot = TeleBot(TELEGRAM_TOKEN, parse_mode="HTML", num_threads=BOT_THREADS)
 
 
 # In-memory state per chat for pagination and lightweight rate limiting
 _state_lock = threading.Lock()
 _chat_state: Dict[int, Dict[str, object]] = {}
 _last_request_ts: Dict[int, float] = {}
+_cache_lock = threading.Lock()
+_cache: Dict[tuple, tuple] = {}
+
+
+def _session() -> requests.Session:
+    # Singleton HTTP session with connection pooling and retries
+    global __SESSION
+    try:
+        return __SESSION  # type: ignore[name-defined]
+    except Exception:
+        pass
+    s = requests.Session()
+    retries = Retry(
+        total=2,
+        backoff_factor=0.2,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST"],
+    )
+    adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=retries)
+    s.mount("https://", adapter)
+    s.mount("http://", adapter)
+    __SESSION = s  # type: ignore[assignment]
+    return s
+
+
+CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "60"))
+CACHE_MAX_KEYS = int(os.getenv("CACHE_MAX_KEYS", "200"))
+
+
+def _cache_get(key: tuple):
+    now = time.time()
+    with _cache_lock:
+        hit = _cache.get(key)
+        if not hit:
+            return None
+        ts, value = hit
+        if now - ts > CACHE_TTL_SECONDS:
+            _cache.pop(key, None)
+            return None
+        return value
+
+
+def _cache_set(key: tuple, value):
+    with _cache_lock:
+        if len(_cache) > CACHE_MAX_KEYS:
+            try:
+                _cache.pop(next(iter(_cache)))
+            except Exception:
+                _cache.clear()
+        _cache[key] = (time.time(), value)
 
 
 def _ensure_dirs() -> None:
@@ -157,6 +210,10 @@ def google_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict],
     Returns (items, next_start) where next_start is the next page start index if available.
     """
     url = "https://www.googleapis.com/customsearch/v1"
+    cache_key = ("google", query, start, num)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
     params = {
         "key": GOOGLE_API_KEY,
         "cx": SEARCH_ENGINE_ID,
@@ -166,7 +223,7 @@ def google_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict],
         "safe": "active",
     }
     try:
-        resp = requests.get(url, params=params, timeout=12)
+        resp = _session().get(url, params=params, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         items = data.get("items", []) or []
@@ -176,7 +233,9 @@ def google_search(query: str, start: int = 1, num: int = 3) -> Tuple[List[dict],
         next_page = queries.get("nextPage", [])
         if next_page and isinstance(next_page, list):
             next_start = next_page[0].get("startIndex")
-        return items, next_start
+        result = (items, next_start)
+        _cache_set(cache_key, result)
+        return result
     except Exception:
         return [], None
 
@@ -194,6 +253,10 @@ def serpapi_search(
     if not SERPAPI_KEY:
         return [], None
     url = "https://serpapi.com/search.json"
+    cache_key = ("serpapi", query, start, num, tbm or "", tbs or "")
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        return cached
     params = {
         "engine": "google",
         "q": query,
@@ -209,7 +272,7 @@ def serpapi_search(
     if tbs:
         params["tbs"] = tbs
     try:
-        resp = requests.get(url, params=params, timeout=12)
+        resp = _session().get(url, params=params, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         # When searching news (tbm=nws), results live under 'news_results' (sometimes 'top_stories')
@@ -230,7 +293,9 @@ def serpapi_search(
             items.append({"title": title, "link": link, "snippet": snippet})
         # SerpAPI next page calculation may require paid plan; keep simple.
         next_start = None
-        return items, next_start
+        result = (items, next_start)
+        _cache_set(cache_key, result)
+        return result
     except Exception:
         return [], None
 
@@ -378,7 +443,11 @@ def fetch_ai_news(max_results: int = 3) -> List[dict]:
             f"?q=artificial+intelligence+OR+ai&from={since}&sortBy=popularity&pageSize={max_results}"
         )
         headers = {"X-Api-Key": NEWS_API_KEY}
-        resp = requests.get(url, headers=headers, timeout=12)
+        cache_key = ("newsapi", max_results, since)
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return cached
+        resp = _session().get(url, headers=headers, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         if data.get("status") != "ok":
@@ -389,6 +458,7 @@ def fetch_ai_news(max_results: int = 3) -> List[dict]:
             link = a.get("url") or "#"
             snippet = a.get("description") or a.get("source", {}).get("name") or ""
             items.append({"title": title, "link": link, "snippet": snippet})
+        _cache_set(cache_key, items)
         return items
     except Exception:
         return []
@@ -410,7 +480,7 @@ def openai_answer(question: str, context: str = "") -> Optional[str]:
             ],
             "temperature": 0.7,
         }
-        resp = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=20)
+        resp = _session().post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         content = (
