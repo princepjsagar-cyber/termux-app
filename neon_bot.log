@@ -28,3 +28,264 @@ nohup: ignoring input
 2025-08-18 13:24:14,828 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
 2025-08-18 13:24:24,990 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
 2025-08-18 13:24:35,149 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:24:45,310 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:24:55,471 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:01,778 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:26:01 UTC)" (scheduled at 2025-08-18 13:25:01.773881+00:00)
+2025-08-18 13:25:01,778 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:26:01 UTC)" executed successfully
+2025-08-18 13:25:05,631 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:15,790 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:25,951 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:36,111 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:45,024 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:45,709 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:25:47,243 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:47,601 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:25:53,653 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:25:54,330 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:26:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:27:01 UTC)" (scheduled at 2025-08-18 13:26:01.773881+00:00)
+2025-08-18 13:26:01,783 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:27:01 UTC)" executed successfully
+2025-08-18 13:26:03,814 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:13,975 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:24,135 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:25,891 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:27,156 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getFile "HTTP/1.1 200 OK"
+2025-08-18 13:26:27,471 - httpx - INFO - HTTP Request: GET https://api.telegram.org/file/bot8073355370%3AAAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/photos/file_1.jpg "HTTP/1.1 200 OK"
+2025-08-18 13:26:28,129 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:26:36,052 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:41,317 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:42,040 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:26:50,905 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:26:51,808 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:26:53,568 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-18 13:26:55,271 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/editMessageText "HTTP/1.1 200 OK"
+2025-08-18 13:26:59,346 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:01,777 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:28:01 UTC)" (scheduled at 2025-08-18 13:27:01.773881+00:00)
+2025-08-18 13:27:01,777 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:28:01 UTC)" executed successfully
+2025-08-18 13:27:09,506 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:19,666 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:29,825 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:33,077 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:33,747 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:27:43,239 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:43,738 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:27:44,496 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:27:44,908 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-18 13:27:46,065 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/editMessageText "HTTP/1.1 200 OK"
+2025-08-18 13:27:53,908 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:29:01 UTC)" (scheduled at 2025-08-18 13:28:01.773881+00:00)
+2025-08-18 13:28:01,783 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:29:01 UTC)" executed successfully
+2025-08-18 13:28:04,068 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:04,702 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:05,388 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/sendMessage "HTTP/1.1 200 OK"
+2025-08-18 13:28:05,930 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-18 13:28:11,226 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/editMessageText "HTTP/1.1 200 OK"
+2025-08-18 13:28:14,869 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:25,029 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:35,190 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:45,349 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:28:55,509 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:29:01,780 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:30:01 UTC)" (scheduled at 2025-08-18 13:29:01.773881+00:00)
+2025-08-18 13:29:01,780 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:34:01 UTC)" (scheduled at 2025-08-18 13:29:01.774271+00:00)
+2025-08-18 13:29:01,781 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:30:01 UTC)" executed successfully
+2025-08-18 13:29:01,781 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:34:01 UTC)" executed successfully
+2025-08-18 13:29:05,669 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:29:15,830 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:29:25,990 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:29:36,150 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:29:46,310 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:29:56,469 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:30:01,779 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:31:01 UTC)" (scheduled at 2025-08-18 13:30:01.773881+00:00)
+2025-08-18 13:30:01,781 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:31:01 UTC)" executed successfully
+2025-08-18 13:30:06,629 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:30:16,789 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:30:26,949 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:30:37,109 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:30:47,269 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:30:57,430 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:31:01,778 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:32:01 UTC)" (scheduled at 2025-08-18 13:31:01.773881+00:00)
+2025-08-18 13:31:01,779 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:32:01 UTC)" executed successfully
+2025-08-18 13:31:07,590 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:31:17,750 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:31:27,910 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:31:38,070 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:31:48,229 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:31:58,389 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:32:01,778 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:33:01 UTC)" (scheduled at 2025-08-18 13:32:01.773881+00:00)
+2025-08-18 13:32:01,779 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:33:01 UTC)" executed successfully
+2025-08-18 13:32:08,549 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:32:18,709 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:32:28,869 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:32:39,030 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:32:49,190 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:32:59,350 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:33:01,777 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:34:01 UTC)" (scheduled at 2025-08-18 13:33:01.773881+00:00)
+2025-08-18 13:33:01,778 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:34:01 UTC)" executed successfully
+2025-08-18 13:33:09,510 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:33:19,670 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:33:29,830 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:33:39,993 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:33:50,154 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:34:00,315 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:34:01,776 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:35:01 UTC)" (scheduled at 2025-08-18 13:34:01.773881+00:00)
+2025-08-18 13:34:01,776 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:39:01 UTC)" (scheduled at 2025-08-18 13:34:01.774271+00:00)
+2025-08-18 13:34:01,777 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:35:01 UTC)" executed successfully
+2025-08-18 13:34:01,777 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:39:01 UTC)" executed successfully
+2025-08-18 13:34:10,498 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:34:20,658 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:34:30,818 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:34:40,978 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:34:51,138 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:35:01,299 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:35:01,776 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:36:01 UTC)" (scheduled at 2025-08-18 13:35:01.773881+00:00)
+2025-08-18 13:35:01,776 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:36:01 UTC)" executed successfully
+2025-08-18 13:35:11,460 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:35:21,620 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:35:31,780 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:35:41,942 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:35:52,107 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:36:01,784 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:37:01 UTC)" (scheduled at 2025-08-18 13:36:01.773881+00:00)
+2025-08-18 13:36:01,785 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:37:01 UTC)" executed successfully
+2025-08-18 13:36:02,266 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:36:12,427 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:36:22,588 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:36:32,749 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:36:42,911 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:36:53,071 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:37:01,784 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:38:01 UTC)" (scheduled at 2025-08-18 13:37:01.773881+00:00)
+2025-08-18 13:37:01,784 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:38:01 UTC)" executed successfully
+2025-08-18 13:37:03,231 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:37:13,391 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:37:23,552 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:37:33,711 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:37:43,874 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:37:54,036 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:38:01,795 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:39:01 UTC)" (scheduled at 2025-08-18 13:38:01.773881+00:00)
+2025-08-18 13:38:01,808 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:39:01 UTC)" executed successfully
+2025-08-18 13:38:19,545 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:38:29,710 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:38:39,873 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:38:50,035 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:39:00,197 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:39:01,776 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:40:01 UTC)" (scheduled at 2025-08-18 13:39:01.773881+00:00)
+2025-08-18 13:39:01,776 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:44:01 UTC)" (scheduled at 2025-08-18 13:39:01.774271+00:00)
+2025-08-18 13:39:01,777 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:40:01 UTC)" executed successfully
+2025-08-18 13:39:01,777 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:44:01 UTC)" executed successfully
+2025-08-18 13:39:10,362 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:39:20,522 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:39:30,684 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:39:40,845 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:39:51,009 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:40:01,170 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:40:01,775 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:41:01 UTC)" (scheduled at 2025-08-18 13:40:01.773881+00:00)
+2025-08-18 13:40:01,776 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:41:01 UTC)" executed successfully
+2025-08-18 13:40:11,333 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:40:21,509 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:40:31,677 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:40:41,840 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:40:52,001 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:41:01,784 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:42:01 UTC)" (scheduled at 2025-08-18 13:41:01.773881+00:00)
+2025-08-18 13:41:01,785 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:42:01 UTC)" executed successfully
+2025-08-18 13:41:02,166 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:41:12,331 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:41:22,499 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:41:32,659 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:41:42,826 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:41:52,986 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:42:01,783 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:43:01 UTC)" (scheduled at 2025-08-18 13:42:01.773881+00:00)
+2025-08-18 13:42:01,784 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:43:01 UTC)" executed successfully
+2025-08-18 13:42:03,153 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:42:13,319 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:42:23,482 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:42:33,648 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:42:43,828 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:42:53,995 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:43:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:44:01 UTC)" (scheduled at 2025-08-18 13:43:01.773881+00:00)
+2025-08-18 13:43:01,783 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:44:01 UTC)" executed successfully
+2025-08-18 13:43:04,158 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:43:14,324 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:43:24,487 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:43:34,651 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:43:44,812 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:43:54,976 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:44:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:45:01 UTC)" (scheduled at 2025-08-18 13:44:01.773881+00:00)
+2025-08-18 13:44:01,782 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:49:01 UTC)" (scheduled at 2025-08-18 13:44:01.774271+00:00)
+2025-08-18 13:44:01,783 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:45:01 UTC)" executed successfully
+2025-08-18 13:44:01,783 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:49:01 UTC)" executed successfully
+2025-08-18 13:44:05,139 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:51:19,092 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:51:29,254 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:51:39,417 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:51:49,578 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:51:59,742 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:52:05,571 - apscheduler.executors.default - WARNING - Run time of job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:53:01 UTC)" was missed by 0:00:03.797341
+2025-08-18 13:52:05,571 - apscheduler.executors.default - WARNING - Run time of job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:54:01 UTC)" was missed by 0:03:03.797112
+2025-08-18 13:52:09,904 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:52:20,066 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:52:30,228 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:52:40,392 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:52:50,554 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:53:00,719 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:53:01,776 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:54:01 UTC)" (scheduled at 2025-08-18 13:53:01.773881+00:00)
+2025-08-18 13:53:01,776 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:54:01 UTC)" executed successfully
+2025-08-18 13:53:10,880 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:53:21,046 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:53:31,209 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:53:41,371 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:53:51,540 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:54:01,702 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:54:01,775 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:55:01 UTC)" (scheduled at 2025-08-18 13:54:01.773881+00:00)
+2025-08-18 13:54:01,776 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:59:01 UTC)" (scheduled at 2025-08-18 13:54:01.774271+00:00)
+2025-08-18 13:54:01,776 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:55:01 UTC)" executed successfully
+2025-08-18 13:54:01,776 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 13:59:01 UTC)" executed successfully
+2025-08-18 13:54:11,863 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:54:22,027 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:54:32,187 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:54:42,386 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:54:52,546 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:55:01,784 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:56:01 UTC)" (scheduled at 2025-08-18 13:55:01.773881+00:00)
+2025-08-18 13:55:01,784 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:56:01 UTC)" executed successfully
+2025-08-18 13:55:02,708 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:55:12,870 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:55:23,045 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:55:33,209 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:55:43,373 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:55:53,535 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:56:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:57:01 UTC)" (scheduled at 2025-08-18 13:56:01.773881+00:00)
+2025-08-18 13:56:01,783 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:57:01 UTC)" executed successfully
+2025-08-18 13:56:03,695 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:56:13,856 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:56:24,020 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:56:34,187 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:56:44,348 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:56:54,516 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:57:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:58:01 UTC)" (scheduled at 2025-08-18 13:57:01.773881+00:00)
+2025-08-18 13:57:01,782 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:58:01 UTC)" executed successfully
+2025-08-18 13:57:04,678 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:57:14,841 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:57:25,002 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:57:35,162 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:57:45,326 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:57:55,508 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:58:01,782 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:59:01 UTC)" (scheduled at 2025-08-18 13:58:01.773881+00:00)
+2025-08-18 13:58:01,783 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 13:59:01 UTC)" executed successfully
+2025-08-18 13:58:05,671 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:58:15,834 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:58:25,998 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:58:36,159 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:58:46,319 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:58:56,481 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:59:01,779 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 14:00:01 UTC)" (scheduled at 2025-08-18 13:59:01.773881+00:00)
+2025-08-18 13:59:01,780 - apscheduler.executors.default - INFO - Running job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 14:04:01 UTC)" (scheduled at 2025-08-18 13:59:01.774271+00:00)
+2025-08-18 13:59:01,780 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 14:00:01 UTC)" executed successfully
+2025-08-18 13:59:01,780 - apscheduler.executors.default - INFO - Job "_push_news_job (trigger: interval[0:05:00], next run at: 2025-08-18 14:04:01 UTC)" executed successfully
+2025-08-18 13:59:06,644 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:59:16,804 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:59:26,965 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:59:37,151 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:59:47,312 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 13:59:57,476 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 14:00:01,779 - apscheduler.executors.default - INFO - Running job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 14:01:01 UTC)" (scheduled at 2025-08-18 14:00:01.773881+00:00)
+2025-08-18 14:00:01,779 - apscheduler.executors.default - INFO - Job "periodic_save_job (trigger: interval[0:01:00], next run at: 2025-08-18 14:01:01 UTC)" executed successfully
+2025-08-18 14:00:07,638 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 14:00:17,800 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
+2025-08-18 14:00:27,967 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8/getUpdates "HTTP/1.1 200 OK"
