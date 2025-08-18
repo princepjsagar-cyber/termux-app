@@ -545,10 +545,23 @@ def _aggregate_web_content(context: ContextTypes.DEFAULT_TYPE, query: str) -> st
 
 
 async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _rate_limit_ok(update.effective_user.id):
+        return
     prompt = " ".join(context.args) if context.args else ""
     if not prompt:
         await update.message.reply_text("Usage: /ask <question>")
         return
+    if not _ask_quota_ok(context, update.effective_user.id):
+        await update.message.reply_text("Daily /ask quota reached. Try tomorrow.")
+        return
+    flags = _get_flags(context)
+    key = f"ask::{prompt.strip().lower()}"
+    if flags.get("ask_cache"):
+        cached = _cache_get(context, key)
+        if cached:
+            await update.message.reply_text(cached[:4096])
+            _inc_usage(context, "ask_cache_hit")
+            return
     fresh_context = _aggregate_web_content(context, prompt)
     client = get_openai_client(context)
     if not client:
@@ -567,19 +580,41 @@ async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             temperature=0.2,
         )
         text = resp.choices[0].message.content.strip()
+        if flags.get("ask_cache"):
+            _cache_set(context, key, text)
         await update.message.reply_text(text[:4096])
+        _inc_usage(context, "ask")
     except Exception as e:
         logging.exception("/ask error: %s", e)
         await update.message.reply_text("❌ Failed to answer.")
 
-
+# Hook moderation and persona in AI chat
 async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt: str):
+    if not _rate_limit_ok(update.effective_user.id):
+        return
+    if not await _moderate_if_enabled(context, prompt):
+        await update.message.reply_text("❌ Content blocked by moderation.")
+        return
     client = get_openai_client(context)
     if not client:
         await update.message.reply_text("Set OPENAI_API_KEY to enable AI chat.")
         return
 
-    # Use encrypted persistent history per user if available
+    # Persona
+    system_prompt = "You are a helpful assistant."
+    try:
+        persona = _get_user_entry(context, update.effective_user.id).get("persona")
+        if persona == "tutor":
+            system_prompt = "You are a patient tutor who explains step by step."
+        elif persona == "coder":
+            system_prompt = "You are a senior software engineer; respond with clear code-first solutions."
+        elif persona == "analyst":
+            system_prompt = "You are a data analyst; use bullet points and numbers."
+        elif persona == "friendly":
+            system_prompt = "You are friendly and concise."
+    except Exception:
+        pass
+
     try:
         user_id = update.effective_user.id
         entry = _get_user_entry(context, user_id)
@@ -590,17 +625,16 @@ async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, pro
     except Exception:
         history = ensure_history(context)
 
-    append_user_message(history, prompt)
+    # Prepend system
+    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": prompt}]
 
-    # Send placeholder message for streaming edits
     placeholder = await update.message.reply_text("🤖 Thinking…")
-
     content_chunks: List[str] = []
 
     try:
         stream = client.chat.completions.create(
             model=os.environ.get("OPENAI_CHAT_MODEL", "gpt-4o-mini"),
-            messages=history,
+            messages=messages,
             stream=True,
             temperature=0.4,
         )
@@ -619,26 +653,21 @@ async def handle_ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, pro
                         pass
 
         edit_task = asyncio.create_task(periodic_edit())
-
         for chunk in stream:
             delta = chunk.choices[0].delta.content or ""
             if delta:
                 content_chunks.append(delta)
-
         edit_task.cancel()
 
         final_text = "".join(content_chunks).strip()
-        # Save assistant reply to history
-        history.append({"role": "assistant", "content": final_text})
-
-        if final_text:
-            # Ensure final text is applied
-            await placeholder.edit_text(final_text[:4096])
-        else:
-            await placeholder.edit_text("(no content)")
-        # Persist updated history
+        entry = _get_user_entry(context, update.effective_user.id)
+        hist = entry.setdefault("history", [])
+        hist.append({"role": "user", "content": prompt})
+        hist.append({"role": "assistant", "content": final_text})
         save_store(context)
 
+        await placeholder.edit_text((final_text or "(no content)")[:4096])
+        _inc_usage(context, "ai")
     except Exception as e:
         logging.exception("AI chat error: %s", e)
         try:
@@ -765,6 +794,212 @@ async def health_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("OK")
 
 
+# Advanced config and helpers
+OWNER_ID = int(os.environ.get("OWNER_ID", "0") or 0)
+
+def _get_flags(context: ContextTypes.DEFAULT_TYPE) -> Dict[str, bool]:
+    flags = context.application.bot_data.setdefault("FEATURE_FLAGS", {})
+    # defaults
+    defaults = {
+        "moderation": False,
+        "tts": True,
+        "ocr": True,
+        "ask_cache": True,
+        "quota": False,
+    }
+    for k, v in defaults.items():
+        flags.setdefault(k, v)
+    return flags
+
+# Simple per-user rate limiting
+_last_msg_ts = {}
+
+def _rate_limit_ok(user_id: int, min_interval_s: float = 0.5) -> bool:
+    now = time.time()
+    prev = _last_msg_ts.get(user_id, 0.0)
+    if now - prev < min_interval_s:
+        return False
+    _last_msg_ts[user_id] = now
+    return True
+
+# Moderation
+async def _moderate_if_enabled(context: ContextTypes.DEFAULT_TYPE, text: str) -> bool:
+    flags = _get_flags(context)
+    if not flags.get("moderation"):
+        return True
+    try:
+        client = get_openai_client(context)
+        if not client:
+            return True
+        res = client.moderations.create(model=os.environ.get("OPENAI_MODERATION_MODEL", "omni-moderation-latest"), input=text)
+        out = getattr(res, "results", [{}])[0]
+        if out.get("flagged"):
+            return False
+    except Exception:
+        return True
+    return True
+
+# Persona management
+async def persona_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    args = context.args or []
+    if not args:
+        entry = _get_user_entry(context, update.effective_user.id)
+        persona = entry.get("persona") or "default"
+        await update.message.reply_text(f"Current persona: {persona}\nUsage: /persona set <name> | /persona list")
+        return
+    if args[0].lower() == "list":
+        await update.message.reply_text("Personas: default, tutor, coder, analyst, friendly")
+        return
+    if args[0].lower() == "set" and len(args) >= 2:
+        name = args[1].strip().lower()
+        entry = _get_user_entry(context, update.effective_user.id)
+        entry["persona"] = name
+        save_store(context)
+        await update.message.reply_text(f"✅ Persona set: {name}")
+        return
+    await update.message.reply_text("Usage: /persona set <name> | /persona list")
+
+# Analytics
+def _inc_usage(context: ContextTypes.DEFAULT_TYPE, key: str):
+    usage = context.application.bot_data.setdefault("USAGE", {})
+    usage[key] = usage.get(key, 0) + 1
+
+async def analytics_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if OWNER_ID and update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("Unauthorized")
+        return
+    usage = context.application.bot_data.get("USAGE", {})
+    lines = [f"{k}: {v}" for k, v in sorted(usage.items())]
+    await update.message.reply_text("Usage counts:\n" + ("\n".join(lines) or "(empty)"))
+
+# Admin feature toggles
+async def feature_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if OWNER_ID and update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("Unauthorized")
+        return
+    args = context.args or []
+    flags = _get_flags(context)
+    if len(args) < 2:
+        await update.message.reply_text("Usage: /feature <name> on|off\n" + "\n".join([f"{k}={v}" for k, v in flags.items()]))
+        return
+    name, state = args[0], args[1].lower()
+    if name not in flags:
+        await update.message.reply_text("Unknown flag. Available: " + ", ".join(flags.keys()))
+        return
+    flags[name] = state == "on"
+    await update.message.reply_text(f"✅ {name} set to {flags[name]}")
+
+# Caching and quota for /ask
+def _get_cache(context: ContextTypes.DEFAULT_TYPE) -> Dict[str, Dict[str, Any]]:
+    return context.application.bot_data.setdefault("ASK_CACHE", {})
+
+def _cache_get(context: ContextTypes.DEFAULT_TYPE, key: str, ttl_s: int = 600):
+    cache = _get_cache(context)
+    entry = cache.get(key)
+    if not entry:
+        return None
+    if time.time() - entry.get("ts", 0) > ttl_s:
+        cache.pop(key, None)
+        return None
+    return entry.get("val")
+
+def _cache_set(context: ContextTypes.DEFAULT_TYPE, key: str, val: str):
+    cache = _get_cache(context)
+    cache[key] = {"ts": time.time(), "val": val}
+
+# Daily quota tracking (per user)
+from datetime import datetime
+
+def _ask_quota_ok(context: ContextTypes.DEFAULT_TYPE, user_id: int) -> bool:
+    flags = _get_flags(context)
+    if not flags.get("quota"):
+        return True
+    limit = int(os.environ.get("DAILY_ASK_LIMIT", "50") or 50)
+    entry = _get_user_entry(context, user_id)
+    q = entry.setdefault("ask_quota", {})
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    if q.get("day") != today:
+        q["day"], q["count"] = today, 0
+    if q["count"] >= limit:
+        return False
+    q["count"] += 1
+    save_store(context)
+    return True
+
+# TTS
+async def tts_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flags = _get_flags(context)
+    if not flags.get("tts"):
+        await update.message.reply_text("TTS disabled")
+        return
+    text = " ".join(context.args) if context.args else ""
+    if not text:
+        await update.message.reply_text("Usage: /tts <text>")
+        return
+    client = get_openai_client(context)
+    if not client:
+        await update.message.reply_text("Set OPENAI_API_KEY to use TTS.")
+        return
+    try:
+        speech = client.audio.speech.create(
+            model=os.environ.get("OPENAI_TTS_MODEL", "gpt-4o-mini-tts"),
+            voice=os.environ.get("OPENAI_TTS_VOICE", "alloy"),
+            input=text,
+            format=os.environ.get("OPENAI_TTS_FORMAT", "mp3"),
+        )
+        audio_bytes = speech.read() if hasattr(speech, "read") else getattr(speech, "content", b"")
+        if not audio_bytes:
+            audio_bytes = speech  # some SDKs return bytes
+        bio = io.BytesIO(audio_bytes)
+        bio.name = "speech.mp3"
+        await update.message.reply_voice(voice=InputFile(bio, filename="speech.mp3"))
+    except Exception as e:
+        logging.exception("TTS error: %s", e)
+        await update.message.reply_text("❌ TTS failed.")
+
+# OCR
+async def ocr_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    flags = _get_flags(context)
+    if not flags.get("ocr"):
+        await update.message.reply_text("OCR disabled")
+        return
+    if not update.message or not (update.message.photo or update.message.document):
+        await update.message.reply_text("Reply to an image with /ocr or send an image with /ocr in caption.")
+        return
+    photo = None
+    if update.message.photo:
+        photo = update.message.photo[-1]
+    elif update.message.document and str(update.message.document.mime_type or "").startswith("image/"):
+        photo = update.message.document
+    if not photo:
+        await update.message.reply_text("No image found.")
+        return
+    client = get_openai_client(context)
+    if not client:
+        await update.message.reply_text("Set OPENAI_API_KEY to use OCR.")
+        return
+    tf = await context.bot.get_file(photo.file_id)
+    image_url = tf.file_path
+    messages = [{
+        "role": "user",
+        "content": [
+            {"type": "input_text", "text": "Extract all visible text from this image."},
+            {"type": "input_image", "image_url": image_url},
+        ]
+    }]
+    try:
+        resp = client.chat.completions.create(
+            model=os.environ.get("OPENAI_VISION_MODEL", "gpt-4o-mini"),
+            messages=messages,
+            temperature=0,
+        )
+        text = resp.choices[0].message.content.strip()
+        await update.message.reply_text(text[:4096])
+    except Exception as e:
+        logging.exception("OCR error: %s", e)
+        await update.message.reply_text("❌ OCR failed.")
+
+
 def main():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN environment variable is not set")
@@ -800,6 +1035,11 @@ def main():
     application.add_handler(CommandHandler("unsubscribe_news", unsubscribe_news_command))
     application.add_handler(CommandHandler("code", code_command))
     application.add_handler(CommandHandler("health", health_command))
+    application.add_handler(CommandHandler("persona", persona_command))
+    application.add_handler(CommandHandler("analytics", analytics_command))
+    application.add_handler(CommandHandler("feature", feature_command))
+    application.add_handler(CommandHandler("tts", tts_command))
+    application.add_handler(CommandHandler("ocr", ocr_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
