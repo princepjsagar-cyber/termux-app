@@ -13,6 +13,11 @@ import requests
 from dotenv import load_dotenv
 from telebot import TeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
+from io import BytesIO
+try:
+    from gtts import gTTS
+except Exception:  # pragma: no cover
+    gTTS = None  # type: ignore
 
 
 # Load .env if present
@@ -23,6 +28,8 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")  # Google CSE 'cx' value
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")  # Optional fallback
 PREFER_SERPAPI = os.getenv("PREFER_SERPAPI", "0").strip() in {"1", "true", "TRUE", "yes", "on"}
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Optional for voice transcription
+TTS_LANG = os.getenv("TTS_LANG", "en")
 
 DATA_DIR = os.getenv("DATA_DIR", "/workspace/data")
 BACKUP_DIR = os.getenv("BACKUP_DIR", "/workspace/backups")
@@ -85,6 +92,14 @@ def _init_db() -> None:
                 ts INTEGER NOT NULL,
                 chat_id INTEGER NOT NULL,
                 query TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS settings (
+                chat_id INTEGER PRIMARY KEY,
+                voice_reply_enabled INTEGER NOT NULL DEFAULT 0
             )
             """
         )
@@ -257,6 +272,41 @@ def _build_more_keyboard(has_more: bool) -> Optional[InlineKeyboardMarkup]:
     return kb
 
 
+def _toggle_voice_reply(chat_id: int, enable: bool) -> None:
+    try:
+        with sqlite3.connect(_db_path()) as conn:
+            conn.execute(
+                "INSERT INTO settings (chat_id, voice_reply_enabled) VALUES (?, ?) ON CONFLICT(chat_id) DO UPDATE SET voice_reply_enabled=excluded.voice_reply_enabled",
+                (chat_id, 1 if enable else 0),
+            )
+            conn.commit()
+    except Exception:
+        pass
+
+
+def _is_voice_reply_enabled(chat_id: int) -> bool:
+    try:
+        with sqlite3.connect(_db_path()) as conn:
+            cur = conn.execute("SELECT voice_reply_enabled FROM settings WHERE chat_id=?", (chat_id,))
+            row = cur.fetchone()
+            return bool(row and int(row[0]) == 1)
+    except Exception:
+        return False
+
+
+def _synthesize_voice(text: str) -> Optional[bytes]:
+    if gTTS is None:
+        return None
+    try:
+        tts = gTTS(text=text, lang=TTS_LANG)
+        buf = BytesIO()
+        tts.write_to_fp(buf)
+        return buf.getvalue()
+    except Exception as exc:
+        logging.warning("TTS failed: %s", exc)
+        return None
+
+
 @bot.message_handler(commands=["rt"])  # type: ignore[arg-type]
 def handle_realtime(message: Message) -> None:
     if not SERPAPI_KEY:
@@ -278,6 +328,11 @@ def handle_realtime(message: Message) -> None:
         bot.reply_to(message, "No live results found.")
         return
     text = _format_results_message(items, header="⚡ Live search results:")
+    if _is_voice_reply_enabled(chat_id):
+        audio_bytes = _synthesize_voice("; ".join([i.get("title", "") for i in items]))
+        if audio_bytes:
+            bot.send_voice(chat_id, audio=BytesIO(audio_bytes), caption=text)
+            return
     bot.send_message(chat_id, text, disable_web_page_preview=True)
 
 
@@ -303,7 +358,24 @@ def handle_news(message: Message) -> None:
         bot.reply_to(message, "No news found.")
         return
     text = _format_results_message(items, header="🗞️ Top news:")
+    if _is_voice_reply_enabled(chat_id):
+        audio_bytes = _synthesize_voice("; ".join([i.get("title", "") for i in items]))
+        if audio_bytes:
+            bot.send_voice(chat_id, audio=BytesIO(audio_bytes), caption=text)
+            return
     bot.send_message(chat_id, text, disable_web_page_preview=True)
+
+
+@bot.message_handler(commands=["voice_on"])  # type: ignore[arg-type]
+def handle_voice_on(message: Message) -> None:
+    _toggle_voice_reply(message.chat.id, True)
+    bot.reply_to(message, "🎙️ Voice replies enabled.")
+
+
+@bot.message_handler(commands=["voice_off"])  # type: ignore[arg-type]
+def handle_voice_off(message: Message) -> None:
+    _toggle_voice_reply(message.chat.id, False)
+    bot.reply_to(message, "🔇 Voice replies disabled.")
 
 @bot.message_handler(commands=["start", "help"])  # type: ignore[arg-type]
 def handle_start(message: Message) -> None:
@@ -453,6 +525,11 @@ def handle_query(message: Message) -> None:
     with _state_lock:
         _chat_state[chat_id] = {"query": query, "next_start": next_start, "provider": provider}
 
+    if _is_voice_reply_enabled(chat_id):
+        audio_bytes = _synthesize_voice("; ".join([i.get("title", "") for i in items]))
+        if audio_bytes:
+            bot.send_voice(chat_id, audio=BytesIO(audio_bytes), caption=text, reply_markup=kb)
+            return
     bot.send_message(chat_id, text, reply_markup=kb, disable_web_page_preview=True)
 
 
