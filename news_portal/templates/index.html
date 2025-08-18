@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-Time News</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="container">
+        <h1>ताज़ा समाचार</h1>
+        <div id="news-container">
+            <div class="loader"></div>
+        </div>
+        <button id="refresh-btn">ताज़ा खबरें लाएं</button>
+    </div>
+
+    <script>
+        async function fetchNews() {
+            try {
+                document.getElementById('news-container').innerHTML = `<div class="loader"></div>`;
+                const response = await fetch('/get_news');
+                const data = await response.json();
+                if (data.articles && data.articles.length > 0) {
+                    let newsHTML = '';
+                    data.articles.forEach(article => {
+                        newsHTML += `
+                        <div class="news-card">
+                            <h2>${article.title || 'शीर्षक उपलब्ध नहीं'}</h2>
+                            <img src="${article.urlToImage || 'https://via.placeholder.com/300'}" alt="${article.title || 'News image'}" />
+                            <p>${article.description || 'विवरण उपलब्ध नहीं'}</p>
+                            <a href="${article.url}" target="_blank">पूरा लेख पढ़ें</a>
+                            <div class="source">स्रोत: ${(article.source && article.source.name) || 'अज्ञात'}</div>
+                        </div>`;
+                    });
+                    document.getElementById('news-container').innerHTML = newsHTML;
+                } else {
+                    document.getElementById('news-container').innerHTML = `<div class="error">खबरें लोड करने में समस्या: ${data.message || 'कोई डेटा नहीं मिला'}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('news-container').innerHTML = `<div class="error">त्रुटि: ${error.message}</div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchNews);
+        document.getElementById('refresh-btn').addEventListener('click', fetchNews);
+        setInterval(fetchNews, 300000);
+    </script>
+</body>
+</html>
+

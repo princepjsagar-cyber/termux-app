@@ -725,6 +725,11 @@ async def text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await handle_ai_chat(update, context, update.message.text.strip())
 
 
+async def newsportal_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    host = os.environ.get("NEWS_PORTAL_HOST", "http://127.0.0.1:8080")
+    await update.message.reply_text(f"📰 News Portal: {host}")
+
+
 def main():
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN environment variable is not set")
@@ -754,6 +759,7 @@ def main():
     application.add_handler(CommandHandler("img", img_command))
     application.add_handler(CommandHandler("web", web_command))
     application.add_handler(CommandHandler("news", news_command))
+    application.add_handler(CommandHandler("newsportal", newsportal_command))
     application.add_handler(CommandHandler("ask", ask_command))
     application.add_handler(CommandHandler("subscribe_news", subscribe_news_command))
     application.add_handler(CommandHandler("unsubscribe_news", unsubscribe_news_command))
