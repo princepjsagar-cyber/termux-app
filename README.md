@@ -1,5 +1,38 @@
 # Termux application
 
+## Telegram Search Bot (Python)
+
+This repo includes a minimal Telegram bot that searches the web via Google Custom Search (CSE) and optionally falls back to SerpAPI. It supports pagination (More results), safe search, and a `/recent` command storing per-chat query history.
+
+### Setup
+
+1. Create a `.env` based on `.env.example` and set:
+   - `TELEGRAM_TOKEN`
+   - Either `GOOGLE_API_KEY` + `SEARCH_ENGINE_ID` (your CSE `cx`) or `SERPAPI_KEY`.
+
+2. Install Python deps (use a venv if possible):
+
+```bash
+pip3 install --break-system-packages -r /workspace/requirements.txt
+```
+
+If your system blocks installing packages globally, create a venv with `python3 -m venv .venv` (ensure `python3-venv` is installed) then:
+
+```bash
+. .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Run
+
+```bash
+python3 /workspace/bot.py
+```
+
+Bot commands:
+ - `/start` or `/help` for usage
+ - `/recent [N]` to list your last N queries (default 5)
+
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
 [![Testing status](https://github.com/termux/termux-app/workflows/Unit%20tests/badge.svg)](https://github.com/termux/termux-app/actions)
 [![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
