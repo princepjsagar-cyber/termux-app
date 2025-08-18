@@ -20,6 +20,10 @@ try:
     from gtts import gTTS
 except Exception:  # pragma: no cover
     gTTS = None  # type: ignore
+try:
+    import base64
+except Exception:
+    pass
 
 
 # Load .env if present
@@ -33,6 +37,7 @@ PREFER_SERPAPI = os.getenv("PREFER_SERPAPI", "0").strip() in {"1", "true", "TRUE
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Optional for AI Q&A and voice transcription
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")  # Optional for AI news
+VOICE_DEFAULT_ON = os.getenv("VOICE_DEFAULT_ON", "0").strip() in {"1", "true", "TRUE", "yes", "on"}
 TTS_LANG = os.getenv("TTS_LANG", "en")
 
 DATA_DIR = os.getenv("DATA_DIR", "/workspace/data")
@@ -159,6 +164,16 @@ def _init_db() -> None:
             """
         )
         conn.commit()
+    # Optionally set default voice replies for all chats if VOICE_DEFAULT_ON
+    if VOICE_DEFAULT_ON:
+        try:
+            with sqlite3.connect(_db_path()) as conn:
+                conn.execute(
+                    "UPDATE settings SET voice_reply_enabled=1"
+                )
+                conn.commit()
+        except Exception:
+            pass
 
 
 def _db_count_queries(conn: sqlite3.Connection) -> int:
@@ -382,7 +397,7 @@ def handle_realtime(message: Message) -> None:
     args = (message.text or "").split(maxsplit=1)
     query = (args[1] if len(args) > 1 else "").strip()
     if not query:
-        bot.reply_to(message, "Usage: /rt <query>")
+        bot.reply_to(message, "Usage: /rt [query]")
         return
     chat_id = message.chat.id
     if _rate_limited(chat_id, min_interval_seconds=1.0):
@@ -411,7 +426,7 @@ def handle_news(message: Message) -> None:
     args = (message.text or "").split(maxsplit=1)
     topic = (args[1] if len(args) > 1 else "").strip()
     if not topic:
-        bot.reply_to(message, "Usage: /news <topic>")
+        bot.reply_to(message, "Usage: /news [topic]")
         return
     chat_id = message.chat.id
     if _rate_limited(chat_id, min_interval_seconds=1.0):
@@ -494,6 +509,54 @@ def openai_answer(question: str, context: str = "") -> Optional[str]:
         return None
 
 
+def openai_transcribe(voice_bytes: bytes, filename: str = "audio.ogg") -> Optional[str]:
+    if not OPENAI_API_KEY:
+        return None
+    try:
+        # Use OpenAI Whisper endpoint (v1/audio/transcriptions)
+        import mimetypes
+        from uuid import uuid4
+        boundary = f"----WebKitFormBoundary{uuid4().hex}"
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        }
+        body = BytesIO()
+        def write_field(name: str, value: str):
+            body.write(f"--{boundary}\r\n".encode())
+            body.write(f"Content-Disposition: form-data; name=\"{name}\"\r\n\r\n".encode())
+            body.write(value.encode())
+            body.write(b"\r\n")
+        def write_file(name: str, filename: str, content: bytes, content_type: str):
+            body.write(f"--{boundary}\r\n".encode())
+            body.write(
+                (
+                    f"Content-Disposition: form-data; name=\"{name}\"; filename=\"{filename}\"\r\n"
+                    f"Content-Type: {content_type}\r\n\r\n"
+                ).encode()
+            )
+            body.write(content)
+            body.write(b"\r\n")
+        # Fields
+        write_field("model", "whisper-1")
+        # File
+        content_type = mimetypes.guess_type(filename)[0] or "audio/ogg"
+        write_file("file", filename, voice_bytes, content_type)
+        body.write(f"--{boundary}--\r\n".encode())
+        resp = _session().post(
+            "https://api.openai.com/v1/audio/transcriptions",
+            headers=headers,
+            data=body.getvalue(),
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        text = data.get("text", "").strip()
+        return text or None
+    except Exception:
+        return None
+
+
 @bot.message_handler(commands=["ainews"])  # type: ignore[arg-type]
 def handle_ai_news(message: Message) -> None:
     args = (message.text or "").split()
@@ -526,7 +589,7 @@ def handle_ask(message: Message) -> None:
     parts = (message.text or "").split(maxsplit=1)
     question = (parts[1] if len(parts) > 1 else "").strip()
     if not question:
-        bot.reply_to(message, "Usage: /ask <your question>")
+        bot.reply_to(message, "Usage: /ask [your question]")
         return
     chat_id = message.chat.id
     _log_query(chat_id, f"/ask {question}")
@@ -557,6 +620,42 @@ def handle_voice_off(message: Message) -> None:
     _toggle_voice_reply(message.chat.id, False)
     bot.reply_to(message, "🔇 Voice replies disabled.")
 
+
+@bot.message_handler(content_types=["voice", "audio"])  # type: ignore[arg-type]
+def handle_voice(message: Message) -> None:
+    if not OPENAI_API_KEY:
+        bot.reply_to(message, "Voice transcription requires OPENAI_API_KEY.")
+        return
+    chat_id = message.chat.id
+    try:
+        file_id = message.voice.file_id if message.voice else (message.audio.file_id if message.audio else None)
+        if not file_id:
+            bot.reply_to(message, "Couldn't read the audio message.")
+            return
+        file_info = bot.get_file(file_id)
+        file_url = f"https://api.telegram.org/file/bot{TELEGRAM_TOKEN}/{file_info.file_path}"
+        audio_bytes = _session().get(file_url, timeout=30).content
+        text = openai_transcribe(audio_bytes, filename=os.path.basename(file_info.file_path))
+        if not text:
+            bot.reply_to(message, "I couldn't transcribe that. Please try again.")
+            return
+        _log_query(chat_id, f"[voice]: {text}")
+        # Reuse the standard handler logic by searching with the text
+        items, next_start, provider = search_web(text, start=1, num=3)
+        if not items:
+            bot.reply_to(message, "No results found.")
+            return
+        reply_text = _format_results_message(items, header="🎧 Results for your voice query:")
+        if _is_voice_reply_enabled(chat_id):
+            audio_summary = _synthesize_voice("; ".join([i.get("title", "") for i in items]))
+            if audio_summary:
+                bot.send_voice(chat_id, audio=BytesIO(audio_summary), caption=reply_text)
+                return
+        kb = _build_more_keyboard(has_more=bool(next_start) and provider == "google")
+        bot.send_message(chat_id, reply_text, reply_markup=kb, disable_web_page_preview=True)
+    except Exception:
+        bot.reply_to(message, "Voice processing error.")
+
 @bot.message_handler(commands=["start", "help"])  # type: ignore[arg-type]
 def handle_start(message: Message) -> None:
     bot.send_message(
@@ -567,7 +666,7 @@ def handle_start(message: Message) -> None:
             "- Be specific (e.g., 'python dataclass default factory').\n"
             "- Tap ‘More results’ to paginate.\n"
             "- I keep it safe-search by default.\n"
-            "- Use /news <topic> for real-time news, /rt <query> for live search (SerpAPI)."
+            "- Use /news [topic] for real-time news, /rt [query] for live search (SerpAPI)."
         ),
         disable_web_page_preview=True,
     )
