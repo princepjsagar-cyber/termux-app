@@ -299,7 +299,7 @@ def handle_more(callback: CallbackQuery) -> None:
 
 def main() -> None:
     print("Bot is running...")
-    bot.infinity_polling(timeout=20, long_polling_timeout=20, allowed_updates=["message", "callback_query"])
+    bot.infinity_polling(timeout=20, long_polling_timeout=20, allowed_updates=["message", "callback_query"], skip_pending=True)
 
 
 if __name__ == "__main__":
