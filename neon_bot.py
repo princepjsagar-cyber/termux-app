@@ -99,54 +99,54 @@ async def img_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not prompt:
         await update.message.reply_text("Usage: /img <prompt>")
         return
+    if not gkey:
+        await update.message.reply_text("Set GEMINI_API_KEY with /setkey GEMINI_API_KEY <key>.")
+        return
 
-    if gkey:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=gkey)
+        model_name = os.environ.get("GEMINI_IMAGE_MODEL", "imagen-3.0-generate-001")
+        size = os.environ.get("GEMINI_IMAGE_SIZE", "1024x1024")
+        # Try official image generation method first
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=gkey)
-            model_name = os.environ.get("GEMINI_IMAGE_MODEL", "imagen-3.0-generate-001")
-            # Some environments expose Imagen via generate_images
+            model = genai.GenerativeModel(model_name)
+            result = model.generate_images(prompt=prompt, number_of_images=1, size=size)
+        except Exception:
+            # Fallback to generate_content for older SDKs
             model = genai.GenerativeModel(model_name)
             result = model.generate_content(prompt)
-            # Try to extract the first image
-            image_parts = []
-            for part in getattr(result, 'candidates', []) or []:
-                for content_part in getattr(part.content, 'parts', []) or []:
-                    data = getattr(content_part, 'inline_data', None)
-                    if data and getattr(data, 'data', None):
-                        image_parts.append((data.mime_type, data.data))
-            if not image_parts:
-                # Fallback: use response.candidates[0].content.parts[0].text if no image
-                text = getattr(result, 'text', None) or "No image returned by Gemini."
-                await update.message.reply_text(text[:4096])
-                return
-            mime, b64 = image_parts[0]
-            raw = base64.b64decode(b64)
-            bio = io.BytesIO(raw)
-            bio.name = "image.png"
-            await update.message.reply_photo(photo=InputFile(bio, filename="image.png"), caption=f"🎨 {prompt[:200]}")
-            return
-        except Exception as e:
-            logging.exception("Gemini image generation error: %s", e)
-            # continue to OpenAI fallback
 
-    client = get_openai_client(context)
-    if not client:
-        await update.message.reply_text("Set GEMINI_API_KEY or OPENAI_API_KEY to enable image generation.")
-        return
-    try:
-        img = client.images.generate(
-            model=os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1"),
-            prompt=prompt,
-            size=os.environ.get("OPENAI_IMAGE_SIZE", "1024x1024"),
-        )
-        b64 = img.data[0].b64_json
-        data = base64.b64decode(b64)
-        bio = io.BytesIO(data)
+        b64 = None
+        # Extract image base64 from various possible result shapes
+        if hasattr(result, "generated_images") and result.generated_images:
+            gi = result.generated_images[0]
+            if hasattr(gi, "image"):
+                b64 = getattr(gi.image, "base64_data", None) or getattr(gi.image, "data", None)
+            b64 = b64 or getattr(gi, "base64_image", None)
+        if not b64 and hasattr(result, "images") and result.images:
+            img = result.images[0]
+            b64 = getattr(img, "base64_data", None) or getattr(img, "data", None)
+        if not b64 and hasattr(result, "candidates"):
+            for cand in (result.candidates or []):
+                for part in getattr(cand.content, "parts", []) or []:
+                    inline = getattr(part, "inline_data", None)
+                    if inline and getattr(inline, "data", None):
+                        b64 = inline.data
+                        break
+                if b64:
+                    break
+
+        if not b64:
+            await update.message.reply_text("❌ Gemini did not return an image.")
+            return
+
+        raw = base64.b64decode(b64)
+        bio = io.BytesIO(raw)
         bio.name = "image.png"
         await update.message.reply_photo(photo=InputFile(bio, filename="image.png"), caption=f"🎨 {prompt[:200]}")
     except Exception as e:
-        logging.exception("Image generation error: %s", e)
+        logging.exception("Gemini image generation error: %s", e)
         await update.message.reply_text("❌ Image generation failed.")
 
 
