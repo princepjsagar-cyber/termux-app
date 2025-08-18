@@ -55,11 +55,11 @@ async def setkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Please provide a key: /setkey <name> <value>")
         return
     if len(args) < 2:
-        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|BOT_DATA_KEY> <value>")
+        await update.message.reply_text("Usage: /setkey <OPENAI_API_KEY|TAVILY_API_KEY|SERPAPI_KEY|GOOGLE_CSE_API_KEY|GOOGLE_CSE_CX|GEMINI_API_KEY|BOT_DATA_KEY> <value>")
         return
     name = args[0].strip().upper()
     value = " ".join(args[1:]).strip()
-    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "BOT_DATA_KEY"}
+    allowed = {"OPENAI_API_KEY", "TAVILY_API_KEY", "SERPAPI_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_CX", "GEMINI_API_KEY", "BOT_DATA_KEY"}
     if name not in allowed:
         await update.message.reply_text("Key must be one of: " + ", ".join(sorted(allowed)))
         return
@@ -77,7 +77,8 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• TAVILY_API_KEY: {'Set' if _get_runtime_key(context, 'TAVILY_API_KEY') else 'Not Set'}\n"
         f"• SERPAPI_KEY: {'Set' if _get_runtime_key(context, 'SERPAPI_KEY') else 'Not Set'}\n"
         f"• GOOGLE_CSE_API_KEY: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_API_KEY') else 'Not Set'}\n"
-        f"• GOOGLE_CSE_CX: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_CX') else 'Not Set'}"
+        f"• GOOGLE_CSE_CX: {'Set' if _get_runtime_key(context, 'GOOGLE_CSE_CX') else 'Not Set'}\n"
+        f"• GEMINI_API_KEY: {'Set' if _get_runtime_key(context, 'GEMINI_API_KEY') else 'Not Set'}"
     )
 
 
@@ -90,13 +91,45 @@ async def ai_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def img_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    client = get_openai_client(context)
-    if not client:
-        await update.message.reply_text("Set OPENAI_API_KEY to enable image generation.")
-        return
+    gkey = get_gemini_key(context)
     prompt = " ".join(context.args) if context.args else ""
     if not prompt:
         await update.message.reply_text("Usage: /img <prompt>")
+        return
+
+    if gkey:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gkey)
+            model_name = os.environ.get("GEMINI_IMAGE_MODEL", "imagen-3.0-generate-001")
+            # Some environments expose Imagen via generate_images
+            model = genai.GenerativeModel(model_name)
+            result = model.generate_content(prompt)
+            # Try to extract the first image
+            image_parts = []
+            for part in getattr(result, 'candidates', []) or []:
+                for content_part in getattr(part.content, 'parts', []) or []:
+                    data = getattr(content_part, 'inline_data', None)
+                    if data and getattr(data, 'data', None):
+                        image_parts.append((data.mime_type, data.data))
+            if not image_parts:
+                # Fallback: use response.candidates[0].content.parts[0].text if no image
+                text = getattr(result, 'text', None) or "No image returned by Gemini."
+                await update.message.reply_text(text[:4096])
+                return
+            mime, b64 = image_parts[0]
+            raw = base64.b64decode(b64)
+            bio = io.BytesIO(raw)
+            bio.name = "image.png"
+            await update.message.reply_photo(photo=InputFile(bio, filename="image.png"), caption=f"🎨 {prompt[:200]}")
+            return
+        except Exception as e:
+            logging.exception("Gemini image generation error: %s", e)
+            # continue to OpenAI fallback
+
+    client = get_openai_client(context)
+    if not client:
+        await update.message.reply_text("Set GEMINI_API_KEY or OPENAI_API_KEY to enable image generation.")
         return
     try:
         img = client.images.generate(
@@ -316,6 +349,9 @@ def get_google_cse_key(context: ContextTypes.DEFAULT_TYPE) -> str:
 
 def get_google_cse_cx(context: ContextTypes.DEFAULT_TYPE) -> str:
     return _get_runtime_key(context, "GOOGLE_CSE_CX")
+
+def get_gemini_key(context: ContextTypes.DEFAULT_TYPE) -> str:
+    return _get_runtime_key(context, "GEMINI_API_KEY")
 
 
 def ensure_history(context: ContextTypes.DEFAULT_TYPE) -> List[Dict[str, Any]]:
