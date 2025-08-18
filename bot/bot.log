@@ -1,0 +1,5 @@
+nohup: ignoring input
+2025-08-18 07:28:38,627 - growth_bot - INFO - Starting legitimate growth bot...
+2025-08-18 07:28:43,213 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getMe "HTTP/1.1 200 OK"
+2025-08-18 07:28:43,380 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/deleteWebhook "HTTP/1.1 200 OK"
+2025-08-18 07:28:43,381 - telegram.ext.Application - INFO - Application started
