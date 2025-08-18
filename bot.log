@@ -1,5 +1,5 @@
 nohup: ignoring input
-2025-08-18 03:12:29,586 [INFO] Starting bot...
-/workspace/bot.py:479: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+2025-08-18 03:28:01,394 [INFO] Starting bot...
+/workspace/bot.py:589: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
   ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-2025-08-18 03:12:29,592 [INFO] Backup created: /workspace/backups/bot_20250818_031229.db
+2025-08-18 03:28:01,397 [INFO] Backup created: /workspace/backups/bot_20250818_032801.db

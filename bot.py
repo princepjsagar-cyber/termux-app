@@ -28,7 +28,9 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")  # Google CSE 'cx' value
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")  # Optional fallback
 PREFER_SERPAPI = os.getenv("PREFER_SERPAPI", "0").strip() in {"1", "true", "TRUE", "yes", "on"}
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Optional for voice transcription
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Optional for AI Q&A and voice transcription
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")  # Optional for AI news
 TTS_LANG = os.getenv("TTS_LANG", "en")
 
 DATA_DIR = os.getenv("DATA_DIR", "/workspace/data")
@@ -364,6 +366,114 @@ def handle_news(message: Message) -> None:
             bot.send_voice(chat_id, audio=BytesIO(audio_bytes), caption=text)
             return
     bot.send_message(chat_id, text, disable_web_page_preview=True)
+
+
+def fetch_ai_news(max_results: int = 3) -> List[dict]:
+    if not NEWS_API_KEY:
+        return []
+    try:
+        since = time.strftime("%Y-%m-%d", time.localtime(time.time() - 24*3600))
+        url = (
+            "https://newsapi.org/v2/everything"
+            f"?q=artificial+intelligence+OR+ai&from={since}&sortBy=popularity&pageSize={max_results}"
+        )
+        headers = {"X-Api-Key": NEWS_API_KEY}
+        resp = requests.get(url, headers=headers, timeout=12)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("status") != "ok":
+            return []
+        items: List[dict] = []
+        for a in data.get("articles", [])[:max_results]:
+            title = a.get("title") or "No Title"
+            link = a.get("url") or "#"
+            snippet = a.get("description") or a.get("source", {}).get("name") or ""
+            items.append({"title": title, "link": link, "snippet": snippet})
+        return items
+    except Exception:
+        return []
+
+
+def openai_answer(question: str, context: str = "") -> Optional[str]:
+    if not OPENAI_API_KEY:
+        return None
+    try:
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": OPENAI_MODEL,
+            "messages": [
+                {"role": "system", "content": "You're a helpful assistant. Answer concisely."},
+                {"role": "user", "content": (context + question).strip()},
+            ],
+            "temperature": 0.7,
+        }
+        resp = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=20)
+        resp.raise_for_status()
+        data = resp.json()
+        content = (
+            data.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+            .strip()
+        )
+        return content or None
+    except Exception:
+        return None
+
+
+@bot.message_handler(commands=["ainews"])  # type: ignore[arg-type]
+def handle_ai_news(message: Message) -> None:
+    args = (message.text or "").split()
+    try:
+        limit = int(args[1]) if len(args) > 1 else 3
+        limit = max(1, min(10, limit))
+    except Exception:
+        limit = 3
+    chat_id = message.chat.id
+    _log_query(chat_id, f"/ainews {limit}")
+    if not NEWS_API_KEY:
+        bot.reply_to(message, "Configure NEWS_API_KEY to use /ainews.")
+        return
+    bot.send_chat_action(chat_id, "typing")
+    items = fetch_ai_news(limit)
+    if not items:
+        bot.reply_to(message, "No AI news found right now.")
+        return
+    text = _format_results_message(items, header="🧠 AI news:")
+    if _is_voice_reply_enabled(chat_id):
+        audio_bytes = _synthesize_voice("; ".join([i.get("title", "") for i in items]))
+        if audio_bytes:
+            bot.send_voice(chat_id, audio=BytesIO(audio_bytes), caption=text)
+            return
+    bot.send_message(chat_id, text, disable_web_page_preview=True)
+
+
+@bot.message_handler(commands=["ask"])  # type: ignore[arg-type]
+def handle_ask(message: Message) -> None:
+    parts = (message.text or "").split(maxsplit=1)
+    question = (parts[1] if len(parts) > 1 else "").strip()
+    if not question:
+        bot.reply_to(message, "Usage: /ask <your question>")
+        return
+    chat_id = message.chat.id
+    _log_query(chat_id, f"/ask {question}")
+    if not OPENAI_API_KEY:
+        bot.reply_to(message, "Configure OPENAI_API_KEY to use /ask.")
+        return
+    bot.send_chat_action(chat_id, "typing")
+    answer = openai_answer(question)
+    if not answer:
+        bot.reply_to(message, "I couldn't generate an answer right now.")
+        return
+    if _is_voice_reply_enabled(chat_id):
+        audio_bytes = _synthesize_voice(answer[:600])
+        if audio_bytes:
+            bot.send_voice(chat_id, audio=BytesIO(audio_bytes), caption=html.escape(answer)[:1024])
+            return
+    bot.send_message(chat_id, html.escape(answer), disable_web_page_preview=True)
 
 
 @bot.message_handler(commands=["voice_on"])  # type: ignore[arg-type]
