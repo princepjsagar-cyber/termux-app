@@ -1,0 +1,21 @@
+[Unit]
+Description=Telegram Search Bot (Python)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/workspace
+EnvironmentFile=/etc/telegram-bot.env
+ExecStart=/usr/bin/python3 -u /workspace/bot.py
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=20
+# Uncomment and set a non-root user if available on your server
+# User=ubuntu
+# Group=ubuntu
+
+[Install]
+WantedBy=multi-user.target
+

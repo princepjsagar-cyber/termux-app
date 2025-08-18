@@ -1,0 +1,10 @@
+body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:0;background:#0b1220;color:#e9edf5}
+.container{max-width:900px;margin:40px auto;padding:0 16px}
+h1{font-size:24px;margin-bottom:16px}
+form{display:flex;gap:8px;margin:10px 0}
+input[type=text],input[type=number]{flex:1;padding:10px;border-radius:8px;border:1px solid #223;outline:none;background:#0f1830;color:#e9edf5}
+button{padding:10px 14px;border-radius:8px;border:0;background:#2b6fff;color:white;cursor:pointer}
+#results,#news,.item{margin-top:10px}
+.item{padding:12px;border-radius:10px;background:#0f1830;border:1px solid #223}
+.title a{color:#88aaff;text-decoration:none}
+.snippet{opacity:.85;margin-top:6px}
