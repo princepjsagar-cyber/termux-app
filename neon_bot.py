@@ -844,6 +844,11 @@ async def health_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("OK")
 
 
+async def referral_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    base = os.environ.get("REFERRAL_BASE", "http://127.0.0.1:8090")
+    await update.message.reply_text(f"🎯 Referral API base: {base}\nPOST {base}/register (json: {{username}})\nPOST {base}/reward (json: {{referral_link}})")
+
+
 # Advanced config and helpers
 OWNER_ID = int(os.environ.get("OWNER_ID", "0") or 0)
 
@@ -1105,6 +1110,7 @@ def main():
     application.add_handler(CommandHandler("feature", feature_command))
     application.add_handler(CommandHandler("tts", tts_command))
     application.add_handler(CommandHandler("ocr", ocr_command))
+    application.add_handler(CommandHandler("referral", referral_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
