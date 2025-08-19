@@ -499,6 +499,209 @@ class AgentSystem:
 # Global agent system instance
 agent_system = AgentSystem()
 
+# Quantum-Inspired Advanced Features
+import numpy as np
+import hashlib
+import secrets
+from collections import defaultdict, deque
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Emotion Detection and Sentiment Analysis
+class EmotionDetector:
+    def __init__(self):
+        self.emotion_keywords = {
+            'joy': ['happy', 'excited', 'great', 'awesome', 'wonderful', 'amazing', 'love', '😊', '😄', '🎉'],
+            'sadness': ['sad', 'depressed', 'unhappy', 'disappointed', 'crying', '😢', '😭', '💔'],
+            'anger': ['angry', 'mad', 'furious', 'hate', 'annoyed', '😠', '😡', '💢'],
+            'fear': ['scared', 'afraid', 'worried', 'anxious', 'terrified', '😨', '😰', '😱'],
+            'surprise': ['wow', 'omg', 'unexpected', 'shocked', '😲', '😱', '🤯'],
+            'disgust': ['disgusting', 'gross', 'ew', 'yuck', '🤢', '🤮'],
+            'neutral': ['okay', 'fine', 'normal', 'alright', '🤔', '😐']
+        }
+        self.emotion_history = defaultdict(list)
+    
+    def detect_emotion(self, text: str, user_id: str = None) -> dict:
+        """Detect emotion from text"""
+        text_lower = text.lower()
+        emotion_scores = defaultdict(int)
+        
+        for emotion, keywords in self.emotion_keywords.items():
+            for keyword in keywords:
+                if keyword in text_lower:
+                    emotion_scores[emotion] += 1
+        
+        # Analyze text patterns
+        if '!' in text:
+            emotion_scores['joy'] += 0.5
+            emotion_scores['surprise'] += 0.3
+        
+        if '?' in text:
+            emotion_scores['surprise'] += 0.3
+        
+        if text.isupper():
+            emotion_scores['anger'] += 0.5
+        
+        # Determine primary emotion
+        if emotion_scores:
+            primary_emotion = max(emotion_scores, key=emotion_scores.get)
+            confidence = min(emotion_scores[primary_emotion] / 3, 1.0)
+        else:
+            primary_emotion = 'neutral'
+            confidence = 0.5
+        
+        result = {
+            'primary_emotion': primary_emotion,
+            'confidence': confidence,
+            'all_scores': dict(emotion_scores),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        if user_id:
+            self.emotion_history[user_id].append(result)
+            if len(self.emotion_history[user_id]) > 50:
+                self.emotion_history[user_id].pop(0)
+        
+        return result
+
+# Predictive Analytics Engine
+class PredictiveEngine:
+    def __init__(self):
+        self.user_patterns = defaultdict(lambda: {
+            'message_times': deque(maxlen=100),
+            'topics': defaultdict(int),
+            'response_times': deque(maxlen=50),
+            'engagement_scores': deque(maxlen=50)
+        })
+        self.global_patterns = {
+            'peak_hours': defaultdict(int),
+            'popular_topics': defaultdict(int),
+            'system_load': deque(maxlen=1000)
+        }
+    
+    def predict_user_behavior(self, user_id: str) -> dict:
+        """Predict user behavior patterns"""
+        if user_id not in self.user_patterns:
+            return {'prediction': 'new_user', 'confidence': 0.3}
+        
+        patterns = self.user_patterns[user_id]
+        
+        # Predict next message time
+        if len(patterns['message_times']) > 2:
+            time_diffs = []
+            times = list(patterns['message_times'])
+            for i in range(1, len(times)):
+                diff = (times[i] - times[i-1]).total_seconds()
+                time_diffs.append(diff)
+            
+            avg_interval = sum(time_diffs) / len(time_diffs)
+            next_predicted = datetime.now() + timedelta(seconds=avg_interval)
+        else:
+            next_predicted = None
+        
+        # Predict preferred topics
+        if patterns['topics']:
+            preferred_topic = max(patterns['topics'], key=patterns['topics'].get)
+        else:
+            preferred_topic = 'general'
+        
+        return {
+            'next_message_prediction': next_predicted.isoformat() if next_predicted else None,
+            'preferred_topic': preferred_topic,
+            'confidence': min(len(patterns['message_times']) / 20, 1.0)
+        }
+
+# Autonomous Learning System
+class AutonomousLearner:
+    def __init__(self):
+        self.learning_modules = {
+            'conversation_patterns': defaultdict(list),
+            'user_preferences': defaultdict(dict),
+            'system_optimizations': [],
+            'error_patterns': defaultdict(int)
+        }
+        self.learning_rate = 0.1
+    
+    def learn_from_interaction(self, user_id: str, message: str, response: str, success: bool, context: dict):
+        """Learn from each interaction"""
+        pattern = {
+            'message_type': self._classify_message(message),
+            'response_type': self._classify_response(response),
+            'success': success,
+            'context': context,
+            'timestamp': datetime.now().isoformat()
+        }
+        self.learning_modules['conversation_patterns'][user_id].append(pattern)
+        
+        if not success:
+            error_type = self._classify_error(message, response)
+            self.learning_modules['error_patterns'][error_type] += 1
+    
+    def get_learning_insights(self) -> dict:
+        """Get insights from learning system"""
+        total_users = len(self.learning_modules['conversation_patterns'])
+        total_interactions = sum(len(patterns) for patterns in self.learning_modules['conversation_patterns'].values())
+        
+        top_errors = sorted(self.learning_modules['error_patterns'].items(), key=lambda x: x[1], reverse=True)[:5]
+        
+        return {
+            'total_users_learned': total_users,
+            'total_interactions': total_interactions,
+            'top_error_patterns': dict(top_errors),
+            'learning_rate': self.learning_rate
+        }
+    
+    def _classify_message(self, message: str) -> str:
+        if '?' in message:
+            return 'question'
+        elif any(word in message.lower() for word in ['help', 'support', 'assist']):
+            return 'help_request'
+        else:
+            return 'statement'
+    
+    def _classify_response(self, response: str) -> str:
+        if len(response) > 200:
+            return 'detailed'
+        elif len(response) < 50:
+            return 'concise'
+        else:
+            return 'standard'
+    
+    def _classify_error(self, message: str, response: str) -> str:
+        if 'error' in response.lower():
+            return 'system_error'
+        else:
+            return 'general_error'
+
+# Real-time Collaboration System
+class CollaborationSystem:
+    def __init__(self):
+        self.collaboration_sessions = {}
+        self.shared_memory = defaultdict(dict)
+        self.session_lock = threading.Lock()
+    
+    def create_session(self, session_id: str, participants: list, topic: str) -> dict:
+        """Create a new collaboration session"""
+        with self.session_lock:
+            session = {
+                'id': session_id,
+                'participants': participants,
+                'topic': topic,
+                'created': datetime.now().isoformat(),
+                'messages': [],
+                'shared_knowledge': {},
+                'status': 'active'
+            }
+            self.collaboration_sessions[session_id] = session
+            return session
+
+# Initialize advanced systems
+emotion_detector = EmotionDetector()
+predictive_engine = PredictiveEngine()
+autonomous_learner = AutonomousLearner()
+collaboration_system = CollaborationSystem()
+
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -544,7 +747,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "🤖 AI एजेंट सिस्टम:\n"
             "/agent — मल्टी-एजेंट प्रोसेसिंग\n"
             "/memory — मेमोरी मैनेजमेंट\n"
-            "/task — टास्क प्लानिंग और एक्जीक्यूशन\n\n"
+            "/task — टास्क प्लानिंग और एक्जीक्यूशन\n"
+            "/emotion — इमोशन डिटेक्शन\n"
+            "/predict — प्रेडिक्टिव एनालिटिक्स\n"
+            "/learn — ऑटोनोमस लर्निंग\n"
+            "/collaborate — रीयल-टाइम कॉलैबोरेशन\n\n"
             "आवाज़ और विज़न:\n"
             "/tts <टेक्स्ट> — टेक्स्ट से आवाज़\n"
             "/ocr — इमेज से टेक्स्ट निकालें\n\n"
@@ -581,7 +788,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "🤖 AI Agent System:\n"
             "/agent — Multi-agent processing\n"
             "/memory — Memory management\n"
-            "/task — Task planning and execution\n\n"
+            "/task — Task planning and execution\n"
+            "/emotion — Emotion detection & sentiment analysis\n"
+            "/predict — Predictive analytics & behavior prediction\n"
+            "/learn — Autonomous learning system\n"
+            "/collaborate — Real-time collaboration\n\n"
             "Voice & Vision:\n"
             "/tts <text> — Text to speech\n"
             "/ocr — Send/reply with an image to extract text\n\n"
@@ -1944,6 +2155,387 @@ async def ocr_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.exception("OCR error: %s", e)
         await update.message.reply_text("❌ OCR failed.")
 
+async def emotion_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Emotion detection and sentiment analysis"""
+    if not context.args:
+        await update.message.reply_text(
+            "😊 **Emotion Detection System**\n\n"
+            "**Commands:**\n"
+            "• `/emotion detect <text>` - Detect emotion in text\n"
+            "• `/emotion history` - View your emotion history\n"
+            "• `/emotion trend` - Analyze emotion trends\n"
+            "• `/emotion analyze <user_id>` - Analyze user emotions"
+        )
+        return
+    
+    command = context.args[0].lower()
+    user_id = str(update.effective_user.id)
+    
+    try:
+        if command == "detect" and len(context.args) > 1:
+            text = " ".join(context.args[1:])
+            emotion_result = emotion_detector.detect_emotion(text, user_id)
+            
+            emoji_map = {
+                'joy': '😊', 'sadness': '😢', 'anger': '😠', 
+                'fear': '😨', 'surprise': '😲', 'disgust': '🤢', 'neutral': '😐'
+            }
+            
+            emoji = emoji_map.get(emotion_result['primary_emotion'], '😐')
+            
+            await update.message.reply_text(
+                f"{emoji} **Emotion Analysis:**\n\n"
+                f"**Primary Emotion:** {emotion_result['primary_emotion'].title()}\n"
+                f"**Confidence:** {emotion_result['confidence']:.2f}\n"
+                f"**All Emotions:**\n" +
+                "\n".join([
+                    f"• {emotion.title()}: {score}"
+                    for emotion, score in emotion_result['all_scores'].items()
+                    if score > 0
+                ])
+            )
+        
+        elif command == "history":
+            if user_id not in emotion_detector.emotion_history:
+                await update.message.reply_text("😐 No emotion history found.")
+                return
+            
+            history = emotion_detector.emotion_history[user_id]
+            if not history:
+                await update.message.reply_text("😐 No emotion history found.")
+                return
+            
+            # Analyze recent emotions
+            recent_emotions = [h['primary_emotion'] for h in history[-10:]]
+            emotion_counts = defaultdict(int)
+            for emotion in recent_emotions:
+                emotion_counts[emotion] += 1
+            
+            most_common = max(emotion_counts, key=emotion_counts.get) if emotion_counts else 'neutral'
+            
+            await update.message.reply_text(
+                f"📊 **Your Emotion History:**\n\n"
+                f"**Recent Emotions:** {', '.join(recent_emotions)}\n"
+                f"**Most Common:** {most_common.title()}\n"
+                f"**Total Records:** {len(history)}\n"
+                f"**Recent Analysis:** {history[-1]['primary_emotion'].title()} "
+                f"({history[-1]['confidence']:.2f} confidence)"
+            )
+        
+        elif command == "trend":
+            if user_id not in emotion_detector.emotion_history:
+                await update.message.reply_text("😐 No emotion data for trend analysis.")
+                return
+            
+            history = emotion_detector.emotion_history[user_id]
+            if len(history) < 5:
+                await update.message.reply_text("😐 Need more emotion data for trend analysis.")
+                return
+            
+            # Analyze trend
+            recent = history[-5:]
+            older = history[-10:-5] if len(history) >= 10 else history[:-5]
+            
+            recent_avg_confidence = sum(h['confidence'] for h in recent) / len(recent)
+            older_avg_confidence = sum(h['confidence'] for h in older) / len(older)
+            
+            trend = "improving" if recent_avg_confidence > older_avg_confidence else "declining" if recent_avg_confidence < older_avg_confidence else "stable"
+            
+            await update.message.reply_text(
+                f"📈 **Emotion Trend Analysis:**\n\n"
+                f"**Trend:** {trend.title()}\n"
+                f"**Recent Confidence:** {recent_avg_confidence:.2f}\n"
+                f"**Previous Confidence:** {older_avg_confidence:.2f}\n"
+                f"**Data Points:** {len(history)}"
+            )
+        
+        elif command == "analyze" and len(context.args) > 1:
+            target_user = context.args[1]
+            if target_user not in emotion_detector.emotion_history:
+                await update.message.reply_text(f"😐 No emotion data found for user {target_user}")
+                return
+            
+            history = emotion_detector.emotion_history[target_user]
+            emotions = [h['primary_emotion'] for h in history]
+            emotion_counts = defaultdict(int)
+            for emotion in emotions:
+                emotion_counts[emotion] += 1
+            
+            most_common = max(emotion_counts, key=emotion_counts.get)
+            avg_confidence = sum(h['confidence'] for h in history) / len(history)
+            
+            await update.message.reply_text(
+                f"🔍 **Emotion Analysis for {target_user}:**\n\n"
+                f"**Most Common Emotion:** {most_common.title()}\n"
+                f"**Average Confidence:** {avg_confidence:.2f}\n"
+                f"**Total Records:** {len(history)}\n"
+                f"**Emotion Distribution:**\n" +
+                "\n".join([
+                    f"• {emotion.title()}: {count}"
+                    for emotion, count in emotion_counts.items()
+                ])
+            )
+        
+        else:
+            await update.message.reply_text("❌ Unknown emotion command. Use `/emotion` for help.")
+    
+    except Exception as e:
+        logging.exception("Emotion command error: %s", e)
+        await update.message.reply_text("❌ Error in emotion detection. Please try again.")
+
+async def predict_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Predictive analytics and behavior prediction"""
+    if not context.args:
+        await update.message.reply_text(
+            "🔮 **Predictive Analytics System**\n\n"
+            "**Commands:**\n"
+            "• `/predict behavior <user_id>` - Predict user behavior\n"
+            "• `/predict next <user_id>` - Predict next message time\n"
+            "• `/predict topics <user_id>` - Predict preferred topics\n"
+            "• `/predict system` - Predict system load"
+        )
+        return
+    
+    command = context.args[0].lower()
+    
+    try:
+        if command == "behavior" and len(context.args) > 1:
+            user_id = context.args[1]
+            prediction = predictive_engine.predict_user_behavior(user_id)
+            
+            await update.message.reply_text(
+                f"🔮 **Behavior Prediction for {user_id}:**\n\n"
+                f"**Prediction Type:** {prediction['prediction']}\n"
+                f"**Confidence:** {prediction['confidence']:.2f}\n"
+                f"**Preferred Topic:** {prediction['preferred_topic']}\n"
+                f"**Next Message:** {prediction['next_message_prediction'] or 'Unknown'}"
+            )
+        
+        elif command == "next" and len(context.args) > 1:
+            user_id = context.args[1]
+            prediction = predictive_engine.predict_user_behavior(user_id)
+            
+            if prediction['next_message_prediction']:
+                next_time = datetime.fromisoformat(prediction['next_message_prediction'])
+                time_diff = next_time - datetime.now()
+                
+                if time_diff.total_seconds() > 0:
+                    await update.message.reply_text(
+                        f"⏰ **Next Message Prediction for {user_id}:**\n\n"
+                        f"**Predicted Time:** {next_time.strftime('%H:%M:%S')}\n"
+                        f"**Time Until:** {int(time_diff.total_seconds() / 60)} minutes\n"
+                        f"**Confidence:** {prediction['confidence']:.2f}"
+                    )
+                else:
+                    await update.message.reply_text(f"⏰ {user_id} is overdue for a message!")
+            else:
+                await update.message.reply_text(f"⏰ No prediction available for {user_id}")
+        
+        elif command == "topics" and len(context.args) > 1:
+            user_id = context.args[1]
+            prediction = predictive_engine.predict_user_behavior(user_id)
+            
+            await update.message.reply_text(
+                f"📚 **Topic Prediction for {user_id}:**\n\n"
+                f"**Preferred Topic:** {prediction['preferred_topic']}\n"
+                f"**Confidence:** {prediction['confidence']:.2f}\n"
+                f"**Prediction Quality:** {'High' if prediction['confidence'] > 0.7 else 'Medium' if prediction['confidence'] > 0.4 else 'Low'}"
+            )
+        
+        elif command == "system":
+            prediction = predictive_engine.predict_system_load()
+            
+            await update.message.reply_text(
+                f"🖥️ **System Load Prediction:**\n\n"
+                f"**Peak Hour:** {prediction['peak_hour']}:00\n"
+                f"**Current Hour:** {prediction['current_hour']}:00\n"
+                f"**Approaching Peak:** {'Yes' if prediction['approaching_peak'] else 'No'}\n"
+                f"**Confidence:** {prediction['confidence']:.2f}"
+            )
+        
+        else:
+            await update.message.reply_text("❌ Unknown predict command. Use `/predict` for help.")
+    
+    except Exception as e:
+        logging.exception("Predict command error: %s", e)
+        await update.message.reply_text("❌ Error in predictive analytics. Please try again.")
+
+async def learn_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Autonomous learning system commands"""
+    if not context.args:
+        await update_message.reply_text(
+            "🧠 **Autonomous Learning System**\n\n"
+            "**Commands:**\n"
+            "• `/learn insights` - View learning insights\n"
+            "• `/learn patterns` - View learned patterns\n"
+            "• `/learn errors` - View error patterns\n"
+            "• `/learn reset` - Reset learning data"
+        )
+        return
+    
+    command = context.args[0].lower()
+    
+    try:
+        if command == "insights":
+            insights = autonomous_learner.get_learning_insights()
+            
+            await update_message.reply_text(
+                f"🧠 **Learning Insights:**\n\n"
+                f"**Total Users Learned:** {insights['total_users_learned']}\n"
+                f"**Total Interactions:** {insights['total_interactions']}\n"
+                f"**Learning Rate:** {insights['learning_rate']:.2f}\n\n"
+                f"**Top Error Patterns:**\n" +
+                "\n".join([
+                    f"• {error}: {count}"
+                    for error, count in insights['top_error_patterns'].items()
+                ])
+            )
+        
+        elif command == "patterns":
+            patterns = autonomous_learner.learning_modules['conversation_patterns']
+            
+            if not patterns:
+                await update_message.reply_text("🧠 No conversation patterns learned yet.")
+                return
+            
+            pattern_summary = []
+            for user_id, user_patterns in list(patterns.items())[:5]:  # Show first 5 users
+                if user_patterns:
+                    success_rate = sum(1 for p in user_patterns if p['success']) / len(user_patterns)
+                    pattern_summary.append(f"• User {user_id}: {len(user_patterns)} patterns, {success_rate:.2f} success rate")
+            
+            await update_message.reply_text(
+                f"📊 **Learned Patterns:**\n\n" +
+                "\n".join(pattern_summary) +
+                f"\n\n**Total Users:** {len(patterns)}"
+            )
+        
+        elif command == "errors":
+            errors = autonomous_learner.learning_modules['error_patterns']
+            
+            if not errors:
+                await update_message.reply_text("🧠 No error patterns recorded.")
+                return
+            
+            error_list = []
+            for error_type, count in sorted(errors.items(), key=lambda x: x[1], reverse=True):
+                error_list.append(f"• {error_type}: {count} occurrences")
+            
+            await update_message.reply_text(
+                f"❌ **Error Patterns:**\n\n" +
+                "\n".join(error_list)
+            )
+        
+        elif command == "reset":
+            autonomous_learner.learning_modules['conversation_patterns'].clear()
+            autonomous_learner.learning_modules['error_patterns'].clear()
+            await update_message.reply_text("🧠 Learning data reset successfully.")
+        
+        else:
+            await update_message.reply_text("❌ Unknown learn command. Use `/learn` for help.")
+    
+    except Exception as e:
+        logging.exception("Learn command error: %s", e)
+        await update_message.reply_text("❌ Error in learning system. Please try again.")
+
+async def collaborate_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Real-time collaboration system"""
+    if not context.args:
+        await update_message.reply_text(
+            "🤝 **Collaboration System**\n\n"
+            "**Commands:**\n"
+            "• `/collaborate create <topic>` - Create collaboration session\n"
+            "• `/collaborate join <session_id>` - Join session\n"
+            "• `/collaborate list` - List active sessions\n"
+            "• `/collaborate summary <session_id>` - Session summary"
+        )
+        return
+    
+    command = context.args[0].lower()
+    user_id = str(update.effective_user.id)
+    
+    try:
+        if command == "create" and len(context.args) > 1:
+            topic = " ".join(context.args[1:])
+            session_id = str(uuid.uuid4())[:8]
+            
+            session = collaboration_system.create_session(session_id, [user_id], topic)
+            
+            await update_message.reply_text(
+                f"🤝 **Collaboration Session Created:**\n\n"
+                f"**Session ID:** `{session_id}`\n"
+                f"**Topic:** {topic}\n"
+                f"**Participants:** {len(session['participants'])}\n"
+                f"**Status:** {session['status']}\n\n"
+                f"Share this session ID with others to collaborate!"
+            )
+        
+        elif command == "join" and len(context.args) > 1:
+            session_id = context.args[1]
+            
+            if session_id not in collaboration_system.collaboration_sessions:
+                await update_message.reply_text(f"❌ Session `{session_id}` not found.")
+                return
+            
+            session = collaboration_system.collaboration_sessions[session_id]
+            
+            if user_id not in session['participants']:
+                session['participants'].append(user_id)
+            
+            await update_message.reply_text(
+                f"🤝 **Joined Collaboration Session:**\n\n"
+                f"**Session ID:** `{session_id}`\n"
+                f"**Topic:** {session['topic']}\n"
+                f"**Participants:** {len(session['participants'])}\n"
+                f"**Messages:** {len(session['messages'])}"
+            )
+        
+        elif command == "list":
+            sessions = collaboration_system.collaboration_sessions
+            
+            if not sessions:
+                await update_message.reply_text("🤝 No active collaboration sessions.")
+                return
+            
+            session_list = []
+            for session_id, session in sessions.items():
+                session_list.append(
+                    f"• `{session_id}` - {session['topic']}\n"
+                    f"  Participants: {len(session['participants'])}, "
+                    f"Messages: {len(session['messages'])}"
+                )
+            
+            await update_message.reply_text(
+                f"🤝 **Active Collaboration Sessions:**\n\n" +
+                "\n\n".join(session_list)
+            )
+        
+        elif command == "summary" and len(context.args) > 1:
+            session_id = context.args[1]
+            
+            if session_id not in collaboration_system.collaboration_sessions:
+                await update_message.reply_text(f"❌ Session `{session_id}` not found.")
+                return
+            
+            summary = collaboration_system.get_session_summary(session_id)
+            
+            await update_message.reply_text(
+                f"📊 **Session Summary:**\n\n"
+                f"**Session ID:** `{session_id}`\n"
+                f"**Topic:** {summary['topic']}\n"
+                f"**Participants:** {len(summary['participants'])}\n"
+                f"**Messages:** {summary['message_count']}\n"
+                f"**Duration:** {int(summary['duration'] / 60)} minutes\n"
+                f"**Shared Knowledge:** {len(summary['shared_knowledge_keys'])} concepts\n"
+                f"**Status:** {summary['status']}"
+            )
+        
+        else:
+            await update_message.reply_text("❌ Unknown collaborate command. Use `/collaborate` for help.")
+    
+    except Exception as e:
+        logging.exception("Collaborate command error: %s", e)
+        await update_message.reply_text("❌ Error in collaboration system. Please try again.")
 
 def main():
     if not BOT_TOKEN:
@@ -1991,6 +2583,10 @@ def main():
     application.add_handler(CommandHandler("agent", agent_command))
     application.add_handler(CommandHandler("memory", memory_command))
     application.add_handler(CommandHandler("task", task_command))
+    application.add_handler(CommandHandler("emotion", emotion_command))
+    application.add_handler(CommandHandler("predict", predict_command))
+    application.add_handler(CommandHandler("learn", learn_command))
+    application.add_handler(CommandHandler("collaborate", collaborate_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
