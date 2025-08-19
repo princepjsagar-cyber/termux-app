@@ -57,6 +57,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/newsportal — न्यूज़ पोर्टल लिंक\n\n"
             "रेफरल:\n"
             "/referral — रेफरल API बेस URL\n\n"
+            "Akka सर्वर:\n"
+            "/akka — Akka-like सर्वर इंटरैक्शन\n\n"
             "आवाज़ और विज़न:\n"
             "/tts <टेक्स्ट> — टेक्स्ट से आवाज़\n"
             "/ocr — इमेज से टेक्स्ट निकालें\n\n"
@@ -88,6 +90,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/newsportal — Portal link\n\n"
             "Referral:\n"
             "/referral — Referral API base URL\n\n"
+            "Akka Server:\n"
+            "/akka — Akka-like server interaction\n\n"
             "Voice & Vision:\n"
             "/tts <text> — Text to speech\n"
             "/ocr — Send/reply with an image to extract text\n\n"
@@ -853,6 +857,62 @@ async def referral_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🎯 Referral API base: {base}\nPOST {base}/register (json: {{username}})\nPOST {base}/reward (json: {{referral_link}})")
 
 
+async def akka_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Interact with Akka-like server"""
+    if not context.args:
+        await update.message.reply_text(
+            "Usage: /akka <command> [args]\n"
+            "Commands:\n"
+            "  message <text> - Send message to Akka server\n"
+            "  state - Get current state\n"
+            "  health - Check server health"
+        )
+        return
+    
+    command = context.args[0].lower()
+    
+    try:
+        if command == "message" and len(context.args) > 1:
+            text = " ".join(context.args[1:])
+            async with httpx.AsyncClient() as client:
+                response = await client.post(f"http://localhost:8070/message/{text}")
+                if response.status_code == 200:
+                    data = response.json()
+                    await update.message.reply_text(f"✅ {data['response']}")
+                else:
+                    await update.message.reply_text("❌ Failed to process message")
+        
+        elif command == "state":
+            async with httpx.AsyncClient() as client:
+                response = await client.get("http://localhost:8070/state")
+                if response.status_code == 200:
+                    data = response.json()
+                    state = data['state']
+                    await update.message.reply_text(
+                        f"📊 Akka Server State:\n"
+                        f"History size: {state['history_size']}\n"
+                        f"Recent messages: {', '.join(state['history'][:3])}\n"
+                        f"Users: {', '.join(state['user_data_keys'])}"
+                    )
+                else:
+                    await update.message.reply_text("❌ Failed to get state")
+        
+        elif command == "health":
+            async with httpx.AsyncClient() as client:
+                response = await client.get("http://localhost:8070/health")
+                if response.status_code == 200:
+                    data = response.json()
+                    await update.message.reply_text(f"✅ {data['status']} - {data['service']}")
+                else:
+                    await update.message.reply_text("❌ Server not healthy")
+        
+        else:
+            await update.message.reply_text("❌ Unknown command. Use /akka for help.")
+    
+    except Exception as e:
+        logging.exception("Akka server error: %s", e)
+        await update.message.reply_text("❌ Error connecting to Akka server")
+
 # Advanced config and helpers
 OWNER_ID = int(os.environ.get("OWNER_ID", "0") or 0)
 
@@ -1115,6 +1175,7 @@ def main():
     application.add_handler(CommandHandler("tts", tts_command))
     application.add_handler(CommandHandler("ocr", ocr_command))
     application.add_handler(CommandHandler("referral", referral_command))
+    application.add_handler(CommandHandler("akka", akka_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
