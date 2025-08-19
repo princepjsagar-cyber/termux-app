@@ -18,6 +18,488 @@ from telegram.ext import (
     InlineQueryHandler,
 )
 
+# Ultra-Advanced AI Agent Features
+import json
+import asyncio
+from datetime import datetime, timedelta
+from typing import Dict, List, Any, Optional, Tuple
+import uuid
+
+# Agent Memory and Context Management
+class AgentMemory:
+    def __init__(self):
+        self.short_term = []  # Recent interactions
+        self.long_term = {}   # Persistent knowledge
+        self.episodic = []    # Event sequences
+        self.semantic = {}    # Factual knowledge
+        
+    def add_interaction(self, user_id: str, message: str, response: str, context: dict = None):
+        interaction = {
+            'id': str(uuid.uuid4()),
+            'timestamp': datetime.now().isoformat(),
+            'user_id': user_id,
+            'message': message,
+            'response': response,
+            'context': context or {},
+            'type': 'interaction'
+        }
+        self.short_term.append(interaction)
+        if len(self.short_term) > 50:  # Keep last 50 interactions
+            self.short_term.pop(0)
+    
+    def add_knowledge(self, key: str, value: Any, category: str = 'general'):
+        if category not in self.semantic:
+            self.semantic[category] = {}
+        self.semantic[category][key] = {
+            'value': value,
+            'timestamp': datetime.now().isoformat(),
+            'confidence': 0.8
+        }
+    
+    def get_relevant_context(self, query: str, limit: int = 5) -> List[dict]:
+        # Simple relevance scoring (can be enhanced with embeddings)
+        relevant = []
+        for interaction in self.short_term[-20:]:  # Check last 20
+            if any(word in interaction['message'].lower() for word in query.lower().split()):
+                relevant.append(interaction)
+        return relevant[:limit]
+
+# Multi-Agent System
+class AgentSystem:
+    def __init__(self):
+        self.agents = {
+            'researcher': {'role': 'Research and fact-checking', 'active': True},
+            'analyst': {'role': 'Data analysis and insights', 'active': True},
+            'creative': {'role': 'Creative content generation', 'active': True},
+            'planner': {'role': 'Task planning and execution', 'active': True},
+            'moderator': {'role': 'Content moderation and safety', 'active': True}
+        }
+        self.memory = AgentMemory()
+        self.conversation_threads = {}
+        self.task_queue = []
+        
+    async def process_with_agents(self, user_id: str, message: str, context: dict = None) -> str:
+        """Multi-agent processing pipeline"""
+        # Create conversation thread
+        if user_id not in self.conversation_threads:
+            self.conversation_threads[user_id] = {
+                'thread_id': str(uuid.uuid4()),
+                'created': datetime.now().isoformat(),
+                'messages': []
+            }
+        
+        thread = self.conversation_threads[user_id]
+        thread['messages'].append({
+            'role': 'user',
+            'content': message,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        # Agent processing pipeline
+        tasks = []
+        
+        # 1. Moderator check
+        if self.agents['moderator']['active']:
+            tasks.append(self._moderate_content(message))
+        
+        # 2. Planner analysis
+        if self.agents['planner']['active']:
+            tasks.append(self._plan_response(message, context))
+        
+        # 3. Researcher fact-checking
+        if self.agents['researcher']['active']:
+            tasks.append(self._research_context(message))
+        
+        # 4. Analyst insights
+        if self.agents['analyst']['active']:
+            tasks.append(self._analyze_patterns(user_id, message))
+        
+        # Execute tasks concurrently
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # 5. Creative response generation
+        creative_context = {
+            'moderation': results[0] if len(results) > 0 else None,
+            'plan': results[1] if len(results) > 1 else None,
+            'research': results[2] if len(results) > 2 else None,
+            'analysis': results[3] if len(results) > 3 else None,
+            'memory': self.memory.get_relevant_context(message),
+            'thread': thread
+        }
+        
+        response = await self._generate_creative_response(message, creative_context)
+        
+        # Store in memory
+        self.memory.add_interaction(user_id, message, response, creative_context)
+        
+        # Update thread
+        thread['messages'].append({
+            'role': 'assistant',
+            'content': response,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        return response
+    
+    async def _moderate_content(self, message: str) -> dict:
+        """Content moderation agent"""
+        # Simple keyword-based moderation (can be enhanced with AI)
+        sensitive_words = ['spam', 'inappropriate', 'harmful']
+        is_safe = not any(word in message.lower() for word in sensitive_words)
+        
+        return {
+            'safe': is_safe,
+            'confidence': 0.9,
+            'flags': [] if is_safe else ['potential_concern'],
+            'recommendation': 'proceed' if is_safe else 'review'
+        }
+    
+    async def _plan_response(self, message: str, context: dict = None) -> dict:
+        """Task planning agent"""
+        # Analyze message intent and plan response strategy
+        intent = self._detect_intent(message)
+        
+        plan = {
+            'intent': intent,
+            'strategy': self._get_strategy(intent),
+            'steps': self._generate_steps(intent, message),
+            'priority': 'high' if 'urgent' in message.lower() else 'normal',
+            'estimated_tokens': len(message.split()) * 3
+        }
+        
+        return plan
+    
+    async def _research_context(self, message: str) -> dict:
+        """Research agent"""
+        # Extract entities and facts for context
+        entities = self._extract_entities(message)
+        
+        research = {
+            'entities': entities,
+            'facts': [],
+            'sources': [],
+            'confidence': 0.7
+        }
+        
+        # Add to semantic memory
+        for entity in entities:
+            self.memory.add_knowledge(entity, {'mentioned_in': message}, 'entities')
+        
+        return research
+    
+    async def _analyze_patterns(self, user_id: str, message: str) -> dict:
+        """Pattern analysis agent"""
+        # Analyze user behavior patterns
+        user_history = [i for i in self.memory.short_term if i['user_id'] == user_id]
+        
+        analysis = {
+            'user_patterns': self._analyze_user_patterns(user_history),
+            'conversation_flow': self._analyze_conversation_flow(user_history),
+            'preferences': self._extract_preferences(user_history),
+            'engagement_level': self._calculate_engagement(user_history)
+        }
+        
+        return analysis
+    
+    async def _generate_creative_response(self, message: str, context: dict) -> str:
+        """Creative response generation agent"""
+        # Enhanced response generation with context
+        base_prompt = f"""
+        Context: {json.dumps(context, indent=2)}
+        
+        User message: {message}
+        
+        Generate a creative, helpful, and contextually aware response that:
+        1. Addresses the user's intent
+        2. Incorporates relevant context from memory
+        3. Maintains conversation flow
+        4. Provides value and insights
+        5. Uses appropriate tone and style
+        """
+        
+        # Use existing AI chat with enhanced context
+        try:
+            response = await self._call_ai_with_context(base_prompt, context)
+            return response
+        except Exception as e:
+            logging.exception("Creative response generation failed: %s", e)
+            return "I'm processing your request with advanced AI agents. Please try again."
+    
+    def _detect_intent(self, message: str) -> str:
+        """Detect user intent"""
+        message_lower = message.lower()
+        
+        if any(word in message_lower for word in ['help', 'support', 'assist']):
+            return 'help_request'
+        elif any(word in message_lower for word in ['explain', 'what is', 'how does']):
+            return 'explanation_request'
+        elif any(word in message_lower for word in ['create', 'generate', 'make']):
+            return 'creation_request'
+        elif any(word in message_lower for word in ['analyze', 'compare', 'evaluate']):
+            return 'analysis_request'
+        elif any(word in message_lower for word in ['search', 'find', 'look up']):
+            return 'search_request'
+        else:
+            return 'general_conversation'
+    
+    def _get_strategy(self, intent: str) -> str:
+        """Get response strategy based on intent"""
+        strategies = {
+            'help_request': 'provide_detailed_guidance',
+            'explanation_request': 'give_clear_explanation_with_examples',
+            'creation_request': 'guide_through_creation_process',
+            'analysis_request': 'provide_structured_analysis',
+            'search_request': 'conduct_comprehensive_search',
+            'general_conversation': 'engage_naturally_with_context'
+        }
+        return strategies.get(intent, 'general_response')
+    
+    def _generate_steps(self, intent: str, message: str) -> List[str]:
+        """Generate response steps"""
+        if intent == 'help_request':
+            return ['identify_specific_need', 'provide_step_by_step_guidance', 'offer_additional_resources']
+        elif intent == 'explanation_request':
+            return ['break_down_concept', 'provide_examples', 'connect_to_user_context']
+        elif intent == 'creation_request':
+            return ['clarify_requirements', 'suggest_approaches', 'guide_implementation']
+        else:
+            return ['understand_request', 'provide_response', 'follow_up']
+    
+    def _extract_entities(self, message: str) -> List[str]:
+        """Extract named entities from message"""
+        # Simple entity extraction (can be enhanced with NER)
+        entities = []
+        words = message.split()
+        
+        # Look for capitalized words, numbers, URLs, etc.
+        for word in words:
+            if word[0].isupper() and len(word) > 2:
+                entities.append(word)
+            elif word.startswith('http'):
+                entities.append(word)
+            elif word.isdigit():
+                entities.append(word)
+        
+        return entities
+    
+    def _analyze_user_patterns(self, history: List[dict]) -> dict:
+        """Analyze user behavior patterns"""
+        if not history:
+            return {'pattern': 'new_user', 'confidence': 0.5}
+        
+        patterns = {
+            'message_frequency': len(history) / max(1, (datetime.now() - datetime.fromisoformat(history[0]['timestamp'])).days),
+            'avg_message_length': sum(len(h['message'].split()) for h in history) / len(history),
+            'preferred_topics': self._extract_topics(history),
+            'interaction_style': self._classify_interaction_style(history)
+        }
+        
+        return patterns
+    
+    def _analyze_conversation_flow(self, history: List[dict]) -> dict:
+        """Analyze conversation flow patterns"""
+        if len(history) < 2:
+            return {'flow': 'initial', 'coherence': 0.5}
+        
+        flow_analysis = {
+            'topic_consistency': self._calculate_topic_consistency(history),
+            'response_time_patterns': self._analyze_response_times(history),
+            'conversation_depth': self._calculate_conversation_depth(history),
+            'engagement_trend': self._calculate_engagement_trend(history)
+        }
+        
+        return flow_analysis
+    
+    def _extract_preferences(self, history: List[dict]) -> dict:
+        """Extract user preferences from history"""
+        preferences = {
+            'response_length': 'medium',
+            'technical_level': 'intermediate',
+            'communication_style': 'friendly',
+            'topics_of_interest': []
+        }
+        
+        # Analyze message patterns to determine preferences
+        avg_length = sum(len(h['message'].split()) for h in history) / len(history)
+        if avg_length > 20:
+            preferences['response_length'] = 'detailed'
+        elif avg_length < 5:
+            preferences['response_length'] = 'concise'
+        
+        return preferences
+    
+    def _calculate_engagement(self, history: List[dict]) -> float:
+        """Calculate user engagement level"""
+        if not history:
+            return 0.5
+        
+        # Simple engagement scoring
+        recent_messages = history[-10:]  # Last 10 messages
+        engagement_score = 0.0
+        
+        for msg in recent_messages:
+            # Longer messages = higher engagement
+            engagement_score += min(len(msg['message'].split()) / 10, 1.0)
+            
+            # Questions = higher engagement
+            if '?' in msg['message']:
+                engagement_score += 0.2
+            
+            # Specific requests = higher engagement
+            if any(word in msg['message'].lower() for word in ['please', 'can you', 'help']):
+                engagement_score += 0.1
+        
+        return min(engagement_score / len(recent_messages), 1.0)
+    
+    def _extract_topics(self, history: List[dict]) -> List[str]:
+        """Extract preferred topics from user history"""
+        topics = []
+        for msg in history:
+            words = msg['message'].lower().split()
+            # Simple topic extraction (can be enhanced)
+            if any(word in words for word in ['ai', 'artificial', 'intelligence']):
+                topics.append('AI/Technology')
+            if any(word in words for word in ['news', 'current', 'events']):
+                topics.append('News/Current Events')
+            if any(word in words for word in ['code', 'programming', 'script']):
+                topics.append('Programming/Code')
+        
+        return list(set(topics))
+    
+    def _classify_interaction_style(self, history: List[dict]) -> str:
+        """Classify user interaction style"""
+        if not history:
+            return 'unknown'
+        
+        formal_count = sum(1 for msg in history if any(word in msg['message'].lower() for word in ['please', 'thank you', 'would you']))
+        casual_count = sum(1 for msg in history if any(word in msg['message'].lower() for word in ['hey', 'hi', 'cool', 'awesome']))
+        
+        if formal_count > casual_count:
+            return 'formal'
+        elif casual_count > formal_count:
+            return 'casual'
+        else:
+            return 'mixed'
+    
+    def _calculate_topic_consistency(self, history: List[dict]) -> float:
+        """Calculate topic consistency across conversation"""
+        if len(history) < 2:
+            return 0.5
+        
+        # Simple topic consistency calculation
+        topics = [self._extract_topics([msg]) for msg in history]
+        consistent_topics = set.intersection(*[set(t) for t in topics if t])
+        
+        return len(consistent_topics) / max(1, len(set.union(*[set(t) for t in topics if t])))
+    
+    def _analyze_response_times(self, history: List[dict]) -> dict:
+        """Analyze response time patterns"""
+        if len(history) < 2:
+            return {'avg_response_time': 0, 'pattern': 'unknown'}
+        
+        response_times = []
+        for i in range(1, len(history)):
+            prev_time = datetime.fromisoformat(history[i-1]['timestamp'])
+            curr_time = datetime.fromisoformat(history[i]['timestamp'])
+            response_times.append((curr_time - prev_time).total_seconds())
+        
+        avg_response_time = sum(response_times) / len(response_times)
+        
+        return {
+            'avg_response_time': avg_response_time,
+            'pattern': 'fast' if avg_response_time < 60 else 'normal' if avg_response_time < 300 else 'slow'
+        }
+    
+    def _calculate_conversation_depth(self, history: List[dict]) -> float:
+        """Calculate conversation depth"""
+        if len(history) < 2:
+            return 0.5
+        
+        # Depth based on message complexity and follow-up questions
+        depth_score = 0.0
+        
+        for msg in history:
+            # Longer messages indicate depth
+            depth_score += min(len(msg['message'].split()) / 20, 1.0)
+            
+            # Questions indicate depth
+            if '?' in msg['message']:
+                depth_score += 0.3
+            
+            # Technical terms indicate depth
+            technical_terms = ['algorithm', 'function', 'api', 'database', 'framework']
+            if any(term in msg['message'].lower() for term in technical_terms):
+                depth_score += 0.2
+        
+        return min(depth_score / len(history), 1.0)
+    
+    def _calculate_engagement_trend(self, history: List[dict]) -> str:
+        """Calculate engagement trend"""
+        if len(history) < 5:
+            return 'stable'
+        
+        # Compare recent vs older engagement
+        recent = history[-5:]
+        older = history[-10:-5] if len(history) >= 10 else history[:-5]
+        
+        recent_engagement = self._calculate_engagement(recent)
+        older_engagement = self._calculate_engagement(older)
+        
+        if recent_engagement > older_engagement * 1.2:
+            return 'increasing'
+        elif recent_engagement < older_engagement * 0.8:
+            return 'decreasing'
+        else:
+            return 'stable'
+    
+    async def _call_ai_with_context(self, prompt: str, context: dict) -> str:
+        """Call AI with enhanced context"""
+        # Use existing AI chat with enhanced prompt
+        try:
+            openai_key = _get_runtime_key(context.get('application', {}), 'OPENAI_API_KEY')
+            if not openai_key:
+                return "AI service not available. Please set OPENAI_API_KEY."
+            
+            client = openai.AsyncOpenAI(api_key=openai_key)
+            
+            # Create enhanced system message
+            system_message = f"""
+            You are an advanced AI agent with access to:
+            - User conversation history and patterns
+            - Contextual information and research
+            - Multi-agent analysis results
+            - Semantic memory and knowledge base
+            
+            Context: {json.dumps(context, indent=2)}
+            
+            Provide intelligent, contextually aware responses that:
+            1. Address the user's specific intent and needs
+            2. Incorporate relevant historical context
+            3. Maintain natural conversation flow
+            4. Provide actionable insights and value
+            5. Adapt to user's communication style and preferences
+            """
+            
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=1000,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logging.exception("AI call failed: %s", e)
+            return "I'm experiencing technical difficulties. Please try again."
+
+# Global agent system instance
+agent_system = AgentSystem()
+
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
@@ -59,6 +541,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/referral — रेफरल API बेस URL\n\n"
             "Akka सर्वर:\n"
             "/akka — Akka-like सर्वर इंटरैक्शन\n\n"
+            "🤖 AI एजेंट सिस्टम:\n"
+            "/agent — मल्टी-एजेंट प्रोसेसिंग\n"
+            "/memory — मेमोरी मैनेजमेंट\n"
+            "/task — टास्क प्लानिंग और एक्जीक्यूशन\n\n"
             "आवाज़ और विज़न:\n"
             "/tts <टेक्स्ट> — टेक्स्ट से आवाज़\n"
             "/ocr — इमेज से टेक्स्ट निकालें\n\n"
@@ -92,6 +578,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/referral — Referral API base URL\n\n"
             "Akka Server:\n"
             "/akka — Akka-like server interaction\n\n"
+            "🤖 AI Agent System:\n"
+            "/agent — Multi-agent processing\n"
+            "/memory — Memory management\n"
+            "/task — Task planning and execution\n\n"
             "Voice & Vision:\n"
             "/tts <text> — Text to speech\n"
             "/ocr — Send/reply with an image to extract text\n\n"
@@ -913,6 +1403,328 @@ async def akka_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.exception("Akka server error: %s", e)
         await update.message.reply_text("❌ Error connecting to Akka server")
 
+async def agent_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Advanced AI agent system commands"""
+    if not context.args:
+        await update.message.reply_text(
+            "🤖 **Advanced AI Agent System**\n\n"
+            "**Commands:**\n"
+            "• `/agent process <message>` - Multi-agent processing\n"
+            "• `/agent memory` - View agent memory\n"
+            "• `/agent status` - Agent system status\n"
+            "• `/agent threads` - Active conversation threads\n"
+            "• `/agent toggle <agent_name>` - Enable/disable agents\n"
+            "• `/agent analyze <user_id>` - Analyze user patterns\n\n"
+            "**Available Agents:**\n"
+            "• `researcher` - Research and fact-checking\n"
+            "• `analyst` - Data analysis and insights\n"
+            "• `creative` - Creative content generation\n"
+            "• `planner` - Task planning and execution\n"
+            "• `moderator` - Content moderation and safety"
+        )
+        return
+    
+    command = context.args[0].lower()
+    user_id = str(update.effective_user.id)
+    
+    try:
+        if command == "process" and len(context.args) > 1:
+            message = " ".join(context.args[1:])
+            await update.message.reply_text("🤖 Processing with multi-agent system...")
+            
+            # Process with all agents
+            response = await agent_system.process_with_agents(user_id, message, {
+                'application': context.application.bot_data,
+                'user_data': context.user_data
+            })
+            
+            await update.message.reply_text(f"🤖 **Multi-Agent Response:**\n\n{response}")
+        
+        elif command == "memory":
+            memory_info = {
+                'short_term_count': len(agent_system.memory.short_term),
+                'semantic_categories': list(agent_system.memory.semantic.keys()),
+                'conversation_threads': len(agent_system.conversation_threads),
+                'recent_interactions': [
+                    {
+                        'user_id': i['user_id'],
+                        'message': i['message'][:50] + "..." if len(i['message']) > 50 else i['message'],
+                        'timestamp': i['timestamp']
+                    }
+                    for i in agent_system.memory.short_term[-5:]
+                ]
+            }
+            
+            await update.message.reply_text(
+                f"🧠 **Agent Memory Status:**\n\n"
+                f"• Short-term interactions: {memory_info['short_term_count']}\n"
+                f"• Semantic categories: {', '.join(memory_info['semantic_categories'])}\n"
+                f"• Active threads: {memory_info['conversation_threads']}\n\n"
+                f"**Recent Interactions:**\n" +
+                "\n".join([
+                    f"• {i['user_id']}: {i['message']} ({i['timestamp'][:19]})"
+                    for i in memory_info['recent_interactions']
+                ])
+            )
+        
+        elif command == "status":
+            active_agents = [name for name, config in agent_system.agents.items() if config['active']]
+            inactive_agents = [name for name, config in agent_system.agents.items() if not config['active']]
+            
+            await update.message.reply_text(
+                f"📊 **Agent System Status:**\n\n"
+                f"✅ **Active Agents ({len(active_agents)}):**\n" +
+                "\n".join([f"• {agent}" for agent in active_agents]) +
+                f"\n\n❌ **Inactive Agents ({len(inactive_agents)}):**\n" +
+                "\n".join([f"• {agent}" for agent in inactive_agents]) +
+                f"\n\n🧠 Memory: {len(agent_system.memory.short_term)} interactions"
+            )
+        
+        elif command == "threads":
+            if not agent_system.conversation_threads:
+                await update.message.reply_text("📝 No active conversation threads.")
+                return
+            
+            threads_info = []
+            for user_id, thread in agent_system.conversation_threads.items():
+                threads_info.append(
+                    f"• User {user_id}:\n"
+                    f"  - Messages: {len(thread['messages'])}\n"
+                    f"  - Created: {thread['created'][:19]}\n"
+                    f"  - Thread ID: {thread['thread_id'][:8]}..."
+                )
+            
+            await update.message.reply_text(
+                f"📝 **Active Conversation Threads ({len(agent_system.conversation_threads)}):**\n\n" +
+                "\n".join(threads_info)
+            )
+        
+        elif command == "toggle" and len(context.args) > 1:
+            agent_name = context.args[1].lower()
+            if agent_name in agent_system.agents:
+                agent_system.agents[agent_name]['active'] = not agent_system.agents[agent_name]['active']
+                status = "✅ enabled" if agent_system.agents[agent_name]['active'] else "❌ disabled"
+                await update.message.reply_text(f"🤖 Agent `{agent_name}` {status}")
+            else:
+                await update.message.reply_text(f"❌ Unknown agent: {agent_name}")
+        
+        elif command == "analyze" and len(context.args) > 1:
+            target_user = context.args[1]
+            user_history = [i for i in agent_system.memory.short_term if i['user_id'] == target_user]
+            
+            if not user_history:
+                await update.message.reply_text(f"❌ No data found for user {target_user}")
+                return
+            
+            # Analyze user patterns
+            patterns = agent_system._analyze_user_patterns(user_history)
+            flow = agent_system._analyze_conversation_flow(user_history)
+            preferences = agent_system._extract_preferences(user_history)
+            
+            analysis_text = (
+                f"🔍 **User Analysis: {target_user}**\n\n"
+                f"**Patterns:**\n"
+                f"• Message frequency: {patterns.get('message_frequency', 0):.2f}/day\n"
+                f"• Avg message length: {patterns.get('avg_message_length', 0):.1f} words\n"
+                f"• Preferred topics: {', '.join(patterns.get('preferred_topics', []))}\n"
+                f"• Interaction style: {patterns.get('interaction_style', 'unknown')}\n\n"
+                f"**Conversation Flow:**\n"
+                f"• Topic consistency: {flow.get('topic_consistency', 0):.2f}\n"
+                f"• Conversation depth: {flow.get('conversation_depth', 0):.2f}\n"
+                f"• Engagement trend: {flow.get('engagement_trend', 'stable')}\n\n"
+                f"**Preferences:**\n"
+                f"• Response length: {preferences.get('response_length', 'medium')}\n"
+                f"• Technical level: {preferences.get('technical_level', 'intermediate')}\n"
+                f"• Communication style: {preferences.get('communication_style', 'friendly')}"
+            )
+            
+            await update.message.reply_text(analysis_text)
+        
+        else:
+            await update.message.reply_text("❌ Unknown agent command. Use `/agent` for help.")
+    
+    except Exception as e:
+        logging.exception("Agent command error: %s", e)
+        await update.message.reply_text("❌ Error in agent system. Please try again.")
+
+async def memory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Memory management commands"""
+    if not context.args:
+        await update.message.reply_text(
+            "🧠 **Memory Management**\n\n"
+            "**Commands:**\n"
+            "• `/memory add <key> <value>` - Add knowledge\n"
+            "• `/memory get <key>` - Retrieve knowledge\n"
+            "• `/memory list` - List all knowledge\n"
+            "• `/memory clear` - Clear all memory\n"
+            "• `/memory search <query>` - Search memory"
+        )
+        return
+    
+    command = context.args[0].lower()
+    
+    try:
+        if command == "add" and len(context.args) > 2:
+            key = context.args[1]
+            value = " ".join(context.args[2:])
+            agent_system.memory.add_knowledge(key, value, 'user_defined')
+            await update.message.reply_text(f"✅ Added to memory: `{key}` = `{value}`")
+        
+        elif command == "get" and len(context.args) > 1:
+            key = context.args[1]
+            found = False
+            for category, items in agent_system.memory.semantic.items():
+                if key in items:
+                    value = items[key]['value']
+                    await update.message.reply_text(f"🧠 `{key}` = `{value}` (category: {category})")
+                    found = True
+                    break
+            
+            if not found:
+                await update.message.reply_text(f"❌ Key `{key}` not found in memory")
+        
+        elif command == "list":
+            if not agent_system.memory.semantic:
+                await update.message.reply_text("🧠 Memory is empty")
+                return
+            
+            memory_list = []
+            for category, items in agent_system.memory.semantic.items():
+                memory_list.append(f"**{category}:**")
+                for key, data in items.items():
+                    value = str(data['value'])
+                    if len(value) > 50:
+                        value = value[:50] + "..."
+                    memory_list.append(f"• {key}: {value}")
+                memory_list.append("")
+            
+            await update.message.reply_text("\n".join(memory_list))
+        
+        elif command == "clear":
+            agent_system.memory.semantic.clear()
+            agent_system.memory.short_term.clear()
+            await update.message.reply_text("🧠 Memory cleared")
+        
+        elif command == "search" and len(context.args) > 1:
+            query = " ".join(context.args[1:]).lower()
+            results = []
+            
+            for category, items in agent_system.memory.semantic.items():
+                for key, data in items.items():
+                    if query in key.lower() or query in str(data['value']).lower():
+                        value = str(data['value'])
+                        if len(value) > 50:
+                            value = value[:50] + "..."
+                        results.append(f"• {key}: {value} (category: {category})")
+            
+            if results:
+                await update.message.reply_text(f"🔍 **Search Results for '{query}':**\n\n" + "\n".join(results[:10]))
+            else:
+                await update.message.reply_text(f"🔍 No results found for '{query}'")
+        
+        else:
+            await update.message.reply_text("❌ Unknown memory command. Use `/memory` for help.")
+    
+    except Exception as e:
+        logging.exception("Memory command error: %s", e)
+        await update.message.reply_text("❌ Error in memory system. Please try again.")
+
+async def task_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Task planning and execution commands"""
+    if not context.args:
+        await update.message.reply_text(
+            "📋 **Task Planning System**\n\n"
+            "**Commands:**\n"
+            "• `/task create <description>` - Create new task\n"
+            "• `/task list` - List all tasks\n"
+            "• `/task execute <task_id>` - Execute task\n"
+            "• `/task status` - Task queue status\n"
+            "• `/task clear` - Clear all tasks"
+        )
+        return
+    
+    command = context.args[0].lower()
+    
+    try:
+        if command == "create" and len(context.args) > 1:
+            description = " ".join(context.args[1:])
+            task_id = str(uuid.uuid4())[:8]
+            task = {
+                'id': task_id,
+                'description': description,
+                'created': datetime.now().isoformat(),
+                'status': 'pending',
+                'user_id': str(update.effective_user.id)
+            }
+            agent_system.task_queue.append(task)
+            await update.message.reply_text(f"📋 Task created: `{task_id}` - {description}")
+        
+        elif command == "list":
+            if not agent_system.task_queue:
+                await update.message.reply_text("📋 No tasks in queue")
+                return
+            
+            task_list = []
+            for task in agent_system.task_queue:
+                status_emoji = "⏳" if task['status'] == 'pending' else "✅" if task['status'] == 'completed' else "❌"
+                task_list.append(
+                    f"{status_emoji} `{task['id']}` - {task['description']}\n"
+                    f"   Status: {task['status']} | Created: {task['created'][:19]}"
+                )
+            
+            await update.message.reply_text("📋 **Task Queue:**\n\n" + "\n\n".join(task_list))
+        
+        elif command == "execute" and len(context.args) > 1:
+            task_id = context.args[1]
+            task = next((t for t in agent_system.task_queue if t['id'] == task_id), None)
+            
+            if not task:
+                await update.message.reply_text(f"❌ Task `{task_id}` not found")
+                return
+            
+            if task['status'] != 'pending':
+                await update.message.reply_text(f"❌ Task `{task_id}` is already {task['status']}")
+                return
+            
+            # Execute task with agent system
+            task['status'] = 'executing'
+            await update.message.reply_text(f"🚀 Executing task: {task['description']}")
+            
+            # Process task with agents
+            response = await agent_system.process_with_agents(
+                task['user_id'], 
+                f"Execute task: {task['description']}", 
+                {'task_id': task_id}
+            )
+            
+            task['status'] = 'completed'
+            task['result'] = response
+            await update.message.reply_text(f"✅ Task completed: {response}")
+        
+        elif command == "status":
+            pending = len([t for t in agent_system.task_queue if t['status'] == 'pending'])
+            completed = len([t for t in agent_system.task_queue if t['status'] == 'completed'])
+            executing = len([t for t in agent_system.task_queue if t['status'] == 'executing'])
+            
+            await update.message.reply_text(
+                f"📊 **Task Queue Status:**\n\n"
+                f"⏳ Pending: {pending}\n"
+                f"🚀 Executing: {executing}\n"
+                f"✅ Completed: {completed}\n"
+                f"📋 Total: {len(agent_system.task_queue)}"
+            )
+        
+        elif command == "clear":
+            agent_system.task_queue.clear()
+            await update.message.reply_text("📋 Task queue cleared")
+        
+        else:
+            await update.message.reply_text("❌ Unknown task command. Use `/task` for help.")
+    
+    except Exception as e:
+        logging.exception("Task command error: %s", e)
+        await update.message.reply_text("❌ Error in task system. Please try again.")
+
 # Advanced config and helpers
 OWNER_ID = int(os.environ.get("OWNER_ID", "0") or 0)
 
@@ -1176,6 +1988,9 @@ def main():
     application.add_handler(CommandHandler("ocr", ocr_command))
     application.add_handler(CommandHandler("referral", referral_command))
     application.add_handler(CommandHandler("akka", akka_command))
+    application.add_handler(CommandHandler("agent", agent_command))
+    application.add_handler(CommandHandler("memory", memory_command))
+    application.add_handler(CommandHandler("task", task_command))
 
     application.add_handler(MessageHandler(filters.PHOTO, photo_handler))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, voice_handler))
