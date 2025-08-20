@@ -19,5 +19,8 @@ redis==5.0.8
 # Telegram gateway
 python-telegram-bot==21.9
 
+# AI (optional)
+openai==1.54.4
+
 # Misc utilities
 tenacity==9.0.0

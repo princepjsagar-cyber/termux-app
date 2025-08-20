@@ -4,6 +4,7 @@ import json
 from typing import Optional, Set
 
 from neon_bot import get_bot
+from ai_services import AIServices
 
 try:
 	import redis  # type: ignore
@@ -18,6 +19,8 @@ logging.basicConfig(
 	format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 logger = logging.getLogger("telegram_gateway")
+
+_ai = AIServices()
 
 
 def get_redis_client():
@@ -55,7 +58,19 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-	await update.effective_message.reply_text("Hello! I'm online 24/7. Send a message to interact.")
+	await update.effective_message.reply_text("Hello! I'm online 24/7. Try /help for commands.")
+
+
+async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	await update.effective_message.reply_text(
+		"Commands:\n"
+		"/ping - check if online\n"
+		"/stats - basic stats\n"
+		"/ai <prompt> - ask AI\n"
+		"/summarize <text> - summarize\n"
+		"/translate <lang> <text> - translate\n"
+		"/broadcast <msg> - admin only"
+	)
 
 
 async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -96,18 +111,52 @@ async def cmd_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 		await update.effective_message.reply_text("Broadcast sent")
 
 
+async def cmd_ai(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	prompt = " ".join(context.args).strip()
+	if not prompt:
+		await update.effective_message.reply_text("Usage: /ai <prompt>")
+		return
+	reply = _ai.generate_text(prompt)
+	await update.effective_message.reply_text(reply[:3500])
+
+
+async def cmd_summarize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	text = " ".join(context.args).strip()
+	if not text:
+		await update.effective_message.reply_text("Usage: /summarize <text>")
+		return
+	reply = _ai.summarize(text)
+	await update.effective_message.reply_text(reply[:3500])
+
+
+async def cmd_translate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	if not context.args:
+		await update.effective_message.reply_text("Usage: /translate <lang> <text>")
+		return
+	target = context.args[0]
+	text = " ".join(context.args[1:]).strip()
+	if not text:
+		await update.effective_message.reply_text("Usage: /translate <lang> <text>")
+		return
+	reply = _ai.translate(text, target)
+	await update.effective_message.reply_text(reply[:3500])
+
+
 def main() -> None:
 	token = os.getenv("TELEGRAM_BOT_TOKEN")
 	if not token:
 		raise RuntimeError("TELEGRAM_BOT_TOKEN not set")
 	app = ApplicationBuilder().token(token).build()
 	app.add_handler(CommandHandler("start", cmd_start))
+	app.add_handler(CommandHandler("help", cmd_help))
 	app.add_handler(CommandHandler("ping", cmd_ping))
 	app.add_handler(CommandHandler("stats", cmd_stats))
 	app.add_handler(CommandHandler("broadcast", cmd_broadcast))
+	app.add_handler(CommandHandler("ai", cmd_ai))
+	app.add_handler(CommandHandler("summarize", cmd_summarize))
+	app.add_handler(CommandHandler("translate", cmd_translate))
 	app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_text))
 	logger.info("Telegram gateway started (polling mode)")
-	# Blocking; recommended pattern for PTB v21
 	app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
 
 
