@@ -117,3 +117,19 @@ services:
         sync: false
       - key: KEEPALIVE_INTERVAL_SECONDS
         value: "240"
+
+  - type: worker
+    name: telegram-gateway
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m telegram_gateway
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: REDIS_URL
+        sync: false

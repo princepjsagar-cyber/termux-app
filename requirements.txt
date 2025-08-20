@@ -16,5 +16,8 @@ python-dotenv==1.0.1
 # Queue/Cache (optional; used if REDIS_URL provided)
 redis==5.0.8
 
+# Telegram gateway
+python-telegram-bot==21.9
+
 # Misc utilities
 tenacity==9.0.0
