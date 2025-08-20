@@ -23,6 +23,7 @@ class AIServices:
 	def __init__(self) -> None:
 		self.openai_api_key = os.getenv("OPENAI_API_KEY")
 		self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+		self.image_model = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
 		self.client = None
 		if self.openai_api_key and OpenAI is not None:
 			try:
@@ -36,7 +37,6 @@ class AIServices:
 
 	def generate_text(self, prompt: str, system: Optional[str] = None) -> str:
 		if self.client is None:
-			# Fallback: simple echo with prefix
 			return f"[AI unavailable] {prompt}"
 		try:
 			msgs = []
@@ -56,7 +56,6 @@ class AIServices:
 
 	def summarize(self, text: str) -> str:
 		if self.client is None:
-			# Fallback: naive extractive summary (first 3 sentences/lines)
 			parts = [p.strip() for p in text.replace("\n", ". ").split(".") if p.strip()]
 			return ". ".join(parts[:3])[:800]
 		return self.generate_text(
@@ -66,9 +65,25 @@ class AIServices:
 
 	def translate(self, text: str, target_lang: str) -> str:
 		if self.client is None:
-			# Fallback: label only
 			return f"[translate->{target_lang}] {text}"
 		return self.generate_text(
 			prompt=f"Translate to {target_lang}:\n\n{text}",
 			system="You are a helpful translator.",
 		)
+
+	def generate_image(self, prompt: str) -> str:
+		"""Return an image URL or a fallback message."""
+		if self.client is None:
+			return f"[image unavailable] {prompt}"
+		try:
+			resp = self.client.images.generate(
+				model=self.image_model,
+				prompt=prompt,
+				size=os.getenv("OPENAI_IMAGE_SIZE", "1024x1024"),
+			)
+			if resp.data and getattr(resp.data[0], "url", None):
+				return resp.data[0].url
+			return "[image generated, but URL unavailable]"
+		except Exception as exc:  # pragma: no cover
+			logger.warning("OpenAI image generation failed: %s", exc)
+			return f"[image error] {prompt}"
