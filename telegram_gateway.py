@@ -66,7 +66,7 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 	await update.effective_message.reply_text(
 		"Commands:\n"
 		"/ping - check if online\n"
-		"/stats - basic stats\n"
+		"/stats - group member count in groups; bot stats in private\n"
 		"/groupstats - member count for this chat\n"
 		"/growth - show growth placeholder (admin)\n"
 		"/invite - generate invite link (admin)\n"
@@ -82,6 +82,16 @@ async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	chat = update.effective_chat
+	if chat and chat.type in {ChatType.GROUP, ChatType.SUPERGROUP, ChatType.CHANNEL}:
+		try:
+			count = await context.bot.get_chat_member_count(chat.id)
+			await update.effective_message.reply_text(f"👥 Current member count: {count}")
+		except Exception as exc:
+			logger.warning("/stats member count failed: %s", exc)
+			await update.effective_message.reply_text("❌ Could not get member count. Make sure I'm an admin if this is a channel.")
+		return
+	# Private or other chats: show bot runtime stats
 	bot = get_bot()
 	status = bot.get_status()
 	msg = (
