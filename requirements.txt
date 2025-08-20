@@ -22,5 +22,9 @@ python-telegram-bot==21.9
 # AI (optional)
 openai==1.54.4
 
+# Discord gateway
+discord.py==2.4.0
+beautifulsoup4==4.12.3
+
 # Misc utilities
 tenacity==9.0.0

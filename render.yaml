@@ -133,3 +133,21 @@ services:
         sync: false
       - key: REDIS_URL
         sync: false
+
+  - type: worker
+    name: discord-gateway
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m discord_gateway
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: SEARCH_ENGINE_ID
+        sync: false
