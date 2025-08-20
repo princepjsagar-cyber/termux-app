@@ -13,6 +13,7 @@ except Exception:
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, CommandHandler, filters
+from telegram.constants import ChatMemberStatus, ChatType
 
 logging.basicConfig(
 	level=os.getenv("LOG_LEVEL", "INFO"),
@@ -66,6 +67,9 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 		"Commands:\n"
 		"/ping - check if online\n"
 		"/stats - basic stats\n"
+		"/groupstats - member count for this chat\n"
+		"/growth - show growth placeholder (admin)\n"
+		"/invite - generate invite link (admin)\n"
 		"/ai <prompt> - ask AI\n"
 		"/summarize <text> - summarize\n"
 		"/translate <lang> <text> - translate\n"
@@ -142,6 +146,66 @@ async def cmd_translate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 	await update.effective_message.reply_text(reply[:3500])
 
 
+async def cmd_groupstats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	chat = update.effective_chat
+	if chat is None or chat.type not in {ChatType.GROUP, ChatType.SUPERGROUP, ChatType.CHANNEL}:
+		await update.effective_message.reply_text("This command only works in groups or channels.")
+		return
+	try:
+		count = await context.bot.get_chat_member_count(chat.id)
+		await update.effective_message.reply_text(f"👥 Current member count: {count}")
+	except Exception as exc:
+		logger.warning("get_chat_member_count failed: %s", exc)
+		await update.effective_message.reply_text("❌ Could not get member count. Make sure I'm an admin if this is a channel.")
+
+
+async def _ensure_admin(context: ContextTypes.DEFAULT_TYPE, chat_id: int, user_id: int) -> bool:
+	try:
+		member = await context.bot.get_chat_member(chat_id, user_id)
+		return member.status in {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER}
+	except Exception:
+		return False
+
+
+async def cmd_growth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	chat = update.effective_chat
+	user = update.effective_user
+	if chat is None or user is None:
+		return
+	if not await _ensure_admin(context, chat.id, user.id):
+		await update.effective_message.reply_text("🚫 Admins only.")
+		return
+	try:
+		count = await context.bot.get_chat_member_count(chat.id)
+		await update.effective_message.reply_text(
+			"📈 Growth tracking placeholder\n"
+			f"Current members: {count}\n\n"
+			"To properly track growth:\n1) Add me as admin\n2) I will record daily counts (when enabled)\n3) View graphs with /groupstats"
+		)
+	except Exception as exc:
+		logger.warning("growth failed: %s", exc)
+		await update.effective_message.reply_text("❌ An error occurred. Make sure I'm an admin.")
+
+
+async def cmd_invite(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+	chat = update.effective_chat
+	user = update.effective_user
+	if chat is None or user is None:
+		return
+	if not await _ensure_admin(context, chat.id, user.id):
+		await update.effective_message.reply_text("🚫 Admins only.")
+		return
+	try:
+		link = await context.bot.create_chat_invite_link(chat_id=chat.id)
+		await update.effective_message.reply_text(
+			f"🔗 Invite link:\n\n{link.invite_link}",
+			disable_web_page_preview=True,
+		)
+	except Exception as exc:
+		logger.warning("invite failed: %s", exc)
+		await update.effective_message.reply_text("❌ Could not generate invite link. Make sure I'm an admin.")
+
+
 def main() -> None:
 	token = os.getenv("TELEGRAM_BOT_TOKEN")
 	if not token:
@@ -151,6 +215,9 @@ def main() -> None:
 	app.add_handler(CommandHandler("help", cmd_help))
 	app.add_handler(CommandHandler("ping", cmd_ping))
 	app.add_handler(CommandHandler("stats", cmd_stats))
+	app.add_handler(CommandHandler("groupstats", cmd_groupstats))
+	app.add_handler(CommandHandler("growth", cmd_growth))
+	app.add_handler(CommandHandler("invite", cmd_invite))
 	app.add_handler(CommandHandler("broadcast", cmd_broadcast))
 	app.add_handler(CommandHandler("ai", cmd_ai))
 	app.add_handler(CommandHandler("summarize", cmd_summarize))
