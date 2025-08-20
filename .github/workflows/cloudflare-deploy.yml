@@ -1,0 +1,24 @@
+name: Cloudflare Worker Keepalive Deploy
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'cloudflare/**'
+      - '.github/workflows/cloudflare-deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy with Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: cloudflare
+          command: deploy --minify --var KEEPALIVE_URLS=${{ secrets.KEEPALIVE_URLS }}

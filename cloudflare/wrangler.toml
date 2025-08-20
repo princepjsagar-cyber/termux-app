@@ -1,0 +1,6 @@
+name = "keepalive-worker"
+main = "worker.js"
+compatibility_date = "2025-01-15"
+
+[triggers]
+crons = ["*/5 * * * *"]

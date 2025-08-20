@@ -1,0 +1,32 @@
+name: UptimeRobot Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-monitors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        run: |
+          if [ -z "${{ secrets.UPTIMEROBOT_API_KEY }}" ]; then
+            echo "Missing GitHub secret UPTIMEROBOT_API_KEY" >&2; exit 1; fi
+          if [ -z "${{ secrets.KEEPALIVE_URLS }}" ]; then
+            echo "Missing GitHub secret KEEPALIVE_URLS (space-separated URLs)" >&2; exit 1; fi
+
+      - name: Create monitors (idempotent-ish)
+        shell: bash
+        env:
+          API_KEY: ${{ secrets.UPTIMEROBOT_API_KEY }}
+          URLS: ${{ secrets.KEEPALIVE_URLS }}
+        run: |
+          set -e
+          for u in ${URLS}; do
+            name=$(echo "$u" | sed 's/[^a-zA-Z0-9]/_/g' | cut -c1-30)
+            echo "Creating monitor for: $u"
+            curl -fsS -X POST https://api.uptimerobot.com/v2/newMonitor \
+              -H 'Content-Type: application/x-www-form-urlencoded' \
+              -d "api_key=${API_KEY}&format=json&type=1&url=${u}&friendly_name=${name}" \
+              || echo "(Skipping errors; may already exist)"
+          done
+          echo "Done. Open UptimeRobot dashboard to verify monitors."
