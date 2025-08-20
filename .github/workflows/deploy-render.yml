@@ -1,0 +1,63 @@
+name: Deploy to Render (Auto)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Quick lint (optional)
+        run: |
+          echo "Skipping local build; Render will build from repo."
+
+      - name: Trigger Akka server deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_AKKA != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_AKKA }}"
+
+      - name: Trigger SMM panel deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_SMM != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_SMM }}"
+
+      - name: Trigger Metrics deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_METRICS != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_METRICS }}"
+
+      - name: Trigger Queue worker deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_QUEUE != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_QUEUE }}"
+
+      - name: Trigger Promotion worker deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_PROMOTION != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PROMOTION }}"
+
+      - name: Trigger Tunnel Bandit worker deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_TUNNEL != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_TUNNEL }}"
+
+      - name: Trigger PHP worker deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_PHP != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PHP }}"
+
+      - name: Trigger Keepalive worker deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_KEEPALIVE != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_KEEPALIVE }}"
+
+      - name: Trigger Telegram gateway deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_TG != '' }}
+        run: |
+          curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_TG }}"
