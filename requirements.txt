@@ -1,0 +1,20 @@
+# Core web framework for the Akka-like bot server
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
+
+# Metrics exporter
+prometheus-client==0.21.0
+
+# Async HTTP and utilities
+aiohttp==3.10.10
+requests==2.32.3
+
+# Data validation and settings
+pydantic==2.9.2
+python-dotenv==1.0.1
+
+# Queue/Cache (optional; used if REDIS_URL provided)
+redis==5.0.8
+
+# Misc utilities
+tenacity==9.0.0
