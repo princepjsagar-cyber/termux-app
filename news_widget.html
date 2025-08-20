@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Real-time News Widget</title>
+	<style>
+		#news-container { position: fixed; bottom: 0; left: 0; width: 100%; background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 12px; z-index: 10000; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+		.news-item { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 6px 8px; border-radius: 6px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+		.news-item a { text-decoration: none; color: #0d6efd; }
+		.news-item span { color: #6c757d; font-size: 12px; margin-left: 6px; }
+	</style>
+</head>
+<body>
+	<div id="news-container"></div>
+	<script>
+		const newsConfig = {
+			endpoint: "/news/realtime",
+			refreshInterval: Number(new URLSearchParams(location.search).get("refresh") || 300000),
+			symbols: (new URLSearchParams(location.search).get("symbols") || "AAPL,MSFT").split(","),
+			maxResults: Number(new URLSearchParams(location.search).get("limit") || 8),
+		};
+
+		async function fetchNewsUpdates() {
+			try {
+				const params = new URLSearchParams({
+					symbols: newsConfig.symbols.join(','),
+					limit: String(newsConfig.maxResults),
+					sort: 'newest'
+				});
+				const res = await fetch(`${newsConfig.endpoint}?${params}`);
+				if (!res.ok) throw new Error(`API error: ${res.status}`);
+				return await res.json();
+			} catch (e) {
+				console.warn('News fetch failed. Using fallback data:', e);
+				return { articles: [] };
+			}
+		}
+
+		function renderNews(articles) {
+			const container = document.getElementById('news-container');
+			Array.from(container.children).filter(el => el.classList.contains('news-item')).forEach(el => el.remove());
+			articles.slice(0, newsConfig.maxResults).forEach(item => {
+				const el = document.createElement('div');
+				el.className = 'news-item';
+				const published = item.publishedAt ? new Date(item.publishedAt).toLocaleTimeString() : '';
+				el.innerHTML = `
+					<strong>${published}</strong>
+					<a href="${item.url}" target="_blank" rel="noopener noreferrer">${item.title || ''}</a>
+					<span>${(item.source && item.source.name) || ''}</span>
+				`;
+				container.appendChild(el);
+			});
+		}
+
+		(async function init() {
+			const data = await fetchNewsUpdates();
+			renderNews(data.articles || []);
+			setInterval(async () => {
+				const next = await fetchNewsUpdates();
+				renderNews(next.articles || []);
+			}, newsConfig.refreshInterval);
+		})();
+	</script>
+</body>
+</html>
