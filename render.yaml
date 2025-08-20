@@ -87,3 +87,17 @@ services:
         value: 3.11.8
       - key: PROXY_LIST
         sync: false
+
+  - type: worker
+    name: php-earning-bot
+    env: php
+    plan: free
+    region: oregon
+    buildCommand: echo "no build"
+    startCommand: php neon_earning_bot.php
+    autoDeploy: true
+    envVars:
+      - key: PHP_BOT_INTERVAL_SECONDS
+        value: "60"
+      - key: PHP_BOT_ENDPOINT
+        sync: false
