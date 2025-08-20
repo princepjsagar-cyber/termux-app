@@ -101,3 +101,19 @@ services:
         value: "60"
       - key: PHP_BOT_ENDPOINT
         sync: false
+
+  - type: worker
+    name: keepalive-worker
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m keepalive_worker
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: KEEPALIVE_URLS
+        sync: false
+      - key: KEEPALIVE_INTERVAL_SECONDS
+        value: "240"
