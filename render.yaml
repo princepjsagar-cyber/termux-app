@@ -133,6 +133,28 @@ services:
         sync: false
       - key: REDIS_URL
         sync: false
+      - key: BOT_USERNAME
+        sync: false
+
+  - type: worker
+    name: telegram-poster
+    env: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m telegram_poster
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: POST_CHANNEL
+        sync: false
+      - key: POST_INTERVAL_SECONDS
+        value: "86400"
+      - key: POST_PROMPT
+        value: "Share a concise daily tip"
 
   - type: worker
     name: discord-gateway
