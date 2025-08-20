@@ -1,6 +1,8 @@
 import os
 import logging
-from typing import Optional
+from typing import Optional, List
+
+import requests
 
 logging.basicConfig(
 	level=os.getenv("LOG_LEVEL", "INFO"),
@@ -87,3 +89,32 @@ class AIServices:
 		except Exception as exc:  # pragma: no cover
 			logger.warning("OpenAI image generation failed: %s", exc)
 			return f"[image error] {prompt}"
+
+	def fetch_ai_news(self, max_results: int = 5) -> List[str]:
+		"""Fetch latest AI news via NewsAPI if NEWS_API_KEY set; fallback otherwise."""
+		api_key = os.getenv("NEWS_API_KEY")
+		if not api_key:
+			return ["[news unavailable]"]
+		from datetime import datetime, timedelta
+		try:
+			url = (
+				"https://newsapi.org/v2/everything?q=artificial+intelligence+OR+ai"
+				f"&from={(datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')}"
+				f"&sortBy=popularity&apiKey={api_key}&pageSize={max_results}"
+			)
+			resp = requests.get(url, timeout=10)
+			data = resp.json()
+			if data.get("status") == "ok":
+				articles = data.get("articles", [])
+				return [f"📰 {a.get('title')}\n{a.get('url')}" for a in articles]
+			return ["No news found."]
+		except Exception as exc:
+			logger.warning("news fetch failed: %s", exc)
+			return ["[news error]"]
+
+	def answer_question(self, question: str, context: str = "") -> str:
+		"""Q&A via OpenAI if available; safe fallback otherwise."""
+		if self.client is None:
+			return f"[AI unavailable] {question}"
+		prompt = f"{context}{question}" if context else question
+		return self.generate_text(prompt, system="You're a helpful assistant. Answer concisely.")
