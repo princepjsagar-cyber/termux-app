@@ -68,6 +68,16 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send the link to the local dashboard server."""
     dashboard_url = os.environ.get("DASHBOARD_URL", "http://127.0.0.1:8000/")
+    try:
+        # Prefer a file written by tunnels if available
+        url_file = "/workspace/.public_dashboard_url"
+        if os.path.exists(url_file):
+            with open(url_file, "r") as f:
+                url = f.read().strip()
+                if url:
+                    dashboard_url = url
+    except Exception:
+        pass
     await update.message.reply_text(f"📊 Open the dashboard here: {dashboard_url}")
 
 
