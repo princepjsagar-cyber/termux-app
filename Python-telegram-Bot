@@ -1,7 +1,11 @@
 import logging
 import json
+import os
 from datetime import datetime
 from pathlib import Path
+from threading import Thread
+
+from flask import Flask, send_from_directory
 
 from telegram import Update
 from telegram.ext import (
@@ -18,7 +22,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = "8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8"
+# Read Telegram bot token from environment for security
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+if not TOKEN:
+    raise RuntimeError("TELEGRAM_BOT_TOKEN environment variable is not set")
 
 DATA_FILE = Path("growth_data.json")
 
@@ -140,6 +147,26 @@ async def record_daily_members(context: ContextTypes.DEFAULT_TYPE):
 
 # ---------- Main ----------
 def main() -> None:
+    # Start lightweight web server to serve the dashboard
+    web_app = Flask(__name__, static_folder=str(Path(".").resolve()))
+
+    @web_app.route("/")
+    def serve_dashboard():
+        return send_from_directory(web_app.static_folder, "dashboard.html")
+
+    @web_app.route("/health")
+    def health():
+        return {"status": "ok"}
+
+    def run_web_server():
+        host = os.environ.get("HOST", "0.0.0.0")
+        port = int(os.environ.get("PORT", "8080"))
+        # Disable Flask reloader in thread
+        web_app.run(host=host, port=port, debug=False, use_reloader=False)
+
+    web_thread = Thread(target=run_web_server, daemon=True)
+    web_thread.start()
+
     app = Application.builder().token(TOKEN).build()
 
     # Register commands
