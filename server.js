@@ -19,6 +19,17 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, status: 'online' });
 });
 
+// Bot status/info
+app.get('/api/bot-info', async (req, res) => {
+  try {
+    if (!bot) return res.status(200).json({ online: false, reason: 'no-token' });
+    const me = await bot.getMe();
+    return res.status(200).json({ online: true, me });
+  } catch (err) {
+    return res.status(200).json({ online: false, error: String(err && err.message || err) });
+  }
+});
+
 // Simple stub endpoints to back demo UI actions
 app.post('/api/scan', (req, res) => {
   const { url } = req.body || {};
