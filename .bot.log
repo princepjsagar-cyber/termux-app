@@ -8,3 +8,13 @@
 2025-08-21 04:36:58,283 - apscheduler.scheduler - INFO - Added job "record_daily_members" to job store "default"
 2025-08-21 04:36:58,284 - apscheduler.scheduler - INFO - Scheduler started
 2025-08-21 04:36:58,284 - telegram.ext.Application - INFO - Application started
+2025-08-21 04:37:08,566 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:37:18,655 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:37:28,741 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:37:38,828 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:37:48,915 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:37:59,001 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:38:09,088 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:38:19,175 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:38:29,263 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
+2025-08-21 04:38:39,351 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
