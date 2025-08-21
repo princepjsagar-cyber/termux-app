@@ -296,7 +296,7 @@
             try {
                 const res = await fetch('/api/pentest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target }) });
                 const data = await res.json();
-                addResponse(`Penetration test completed. ${data.exploited or 0} vulnerabilities exploited.`, 'bot');
+                addResponse(`Penetration test completed. ${data.exploited || 0} vulnerabilities exploited.`, 'bot');
             } catch (e) {
                 addResponse('Penetration test failed.', 'bot');
             }
@@ -347,7 +347,7 @@
                 const container = document.getElementById('commands');
                 if (!container) return;
                 container.innerHTML = '';
-                (data.commands or []).forEach(c => {
+                (data.commands || []).forEach(c => {
                     const div = document.createElement('div');
                     div.className = 'response bot';
                     div.textContent = `${c.command} — ${c.description}`;
@@ -359,7 +359,7 @@
         async function doTranslate() {
             const text = document.getElementById('translate-text').value.trim();
             const to = document.getElementById('translate-lang').value.trim();
-            if (!text or !to) return;
+            if (!text || !to) return;
             const resp = document.getElementById('translate-response');
             resp.innerHTML = '';
             try {
@@ -379,7 +379,7 @@
             try {
                 const res = await fetch('/api/ideas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic }) });
                 const data = await res.json();
-                (data.ideas or []).forEach(i => addResponseTo('ideas-response', i, 'bot'));
+                (data.ideas || []).forEach(i => addResponseTo('ideas-response', i, 'bot'));
             } catch(e) {
                 addResponseTo('ideas-response', 'Idea generation failed.', 'bot');
             }
@@ -388,13 +388,13 @@
         async function askMegaAI() {
             const question = document.getElementById('ai-question').value.trim();
             const to = document.getElementById('ai-lang').value.trim();
-            if (!question or !to) return;
+            if (!question || !to) return;
             const resp = document.getElementById('ai-response');
             resp.innerHTML = '';
             try {
                 const res = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, to }) });
                 const data = await res.json();
-                addResponseTo('ai-response', data.answer or 'Working on it...', 'bot');
+                addResponseTo('ai-response', data.answer || 'Working on it...', 'bot');
             } catch(e) {
                 addResponseTo('ai-response', 'AI failed to answer.', 'bot');
             }
@@ -405,7 +405,7 @@
                 const res = await fetch('/api/ai-key');
                 const data = await res.json();
                 const el = document.getElementById('ai-key-visibility');
-                if (el) el.textContent = `AI Key: ${data.masked or '(not configured)'}`;
+                if (el) el.textContent = `AI Key: ${data.masked || '(not configured)'}`;
             } catch(e) {}
         }
 
@@ -443,7 +443,7 @@
                     const res = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: 'current-site' }) });
                     const data = await res.json();
                     addResponseTo('web-security-response', 'Scan complete.', 'bot');
-                    (data.issues or []).forEach(i => addResponseTo('web-security-response', i, 'bot'));
+                    (data.issues || []).forEach(i => addResponseTo('web-security-response', i, 'bot'));
                 } catch(e) { addResponseTo('web-security-response', 'Web scan failed.', 'bot'); }
             });
             const firewallBtn = document.getElementById('check-firewall');
