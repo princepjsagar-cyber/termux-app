@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Analytics Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .dashboard {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .metrics {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 200px;
+            text-align: center;
+            margin: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .metric-label {
+            font-size: 1.2em;
+        }
+        .chart-container {
+            height: 300px;
+            margin: 30px 0;
+            position: relative;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .disclaimer {
+            background-color: #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Bot Analytics Dashboard</h1>
+        
+        <div class="disclaimer">
+            Note: This is a simulation for educational purposes only. Creating fake users violates most platform terms of service.
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-label">Total Members</div>
+                <div class="metric-value" id="total-members">1,250</div>
+                <div class="metric-change">+125 this week</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Active Users</div>
+                <div class="metric-value" id="active-users">842</div>
+                <div class="metric-change">+68 this week</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Engagement Rate</div>
+                <div class="metric-value" id="engagement-rate">67.3%</div>
+                <div class="metric-change">+2.4% this week</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="simulate-day">Simulate Day</button>
+            <button id="simulate-week">Simulate Week</button>
+            <button id="reset">Reset Simulation</button>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="growth-chart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initial simulation data
+        let simulationData = {
+            totalMembers: 1250,
+            activeUsers: 842,
+            engagementRate: 67.3,
+            history: [
+                { day: 'Mon', members: 1125, active: 774 },
+                { day: 'Tue', members: 1138, active: 782 },
+                { day: 'Wed', members: 1152, active: 793 },
+                { day: 'Thu', members: 1167, active: 802 },
+                { day: 'Fri', members: 1185, active: 815 },
+                { day: 'Sat', members: 1205, active: 825 },
+                { day: 'Sun', members: 1228, active: 835 }
+            ]
+        };
+
+        // Initialize chart
+        const ctx = document.getElementById('growth-chart').getContext('2d');
+        const growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: simulationData.history.map(entry => entry.day),
+                datasets: [
+                    {
+                        label: 'Total Members',
+                        data: simulationData.history.map(entry => entry.members),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Active Users',
+                        data: simulationData.history.map(entry => entry.active),
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Member Growth Simulation'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        // Update metrics display
+        function updateMetrics() {
+            document.getElementById('total-members').textContent = simulationData.totalMembers.toLocaleString();
+            document.getElementById('active-users').textContent = simulationData.activeUsers.toLocaleString();
+            document.getElementById('engagement-rate').textContent = simulationData.engagementRate.toFixed(1) + '%';
+            
+            // Update chart
+            growthChart.data.labels = simulationData.history.map(entry => entry.day);
+            growthChart.data.datasets[0].data = simulationData.history.map(entry => entry.members);
+            growthChart.data.datasets[1].data = simulationData.history.map(entry => entry.active);
+            growthChart.update();
+        }
+
+        // Simulate a day of growth
+        function simulateDay() {
+            const lastEntry = simulationData.history[simulationData.history.length - 1];
+            const newMembers = Math.floor(Math.random() * 25) + 15;
+            const newActive = Math.floor(newMembers * 0.7);
+            const engagementChange = (Math.random() * 2) - 1;
+            
+            const newDay = {
+                day: getNextDay(lastEntry.day),
+                members: lastEntry.members + newMembers,
+                active: lastEntry.active + newActive
+            };
+            
+            simulationData.history.push(newDay);
+            if (simulationData.history.length > 7) {
+                simulationData.history.shift();
+            }
+            
+            simulationData.totalMembers = newDay.members;
+            simulationData.activeUsers = newDay.active;
+            simulationData.engagementRate += engagementChange;
+            
+            updateMetrics();
+        }
+
+        // Simulate a week of growth
+        function simulateWeek() {
+            for (let i = 0; i < 7; i++) {
+                simulateDay();
+            }
+        }
+
+        // Get next day abbreviation
+        function getNextDay(day) {
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const currentIndex = days.indexOf(day);
+            return days[(currentIndex + 1) % 7];
+        }
+
+        // Reset simulation
+        function resetSimulation() {
+            simulationData = {
+                totalMembers: 1250,
+                activeUsers: 842,
+                engagementRate: 67.3,
+                history: [
+                    { day: 'Mon', members: 1125, active: 774 },
+                    { day: 'Tue', members: 1138, active: 782 },
+                    { day: 'Wed', members: 1152, active: 793 },
+                    { day: 'Thu', members: 1167, active: 802 },
+                    { day: 'Fri', members: 1185, active: 815 },
+                    { day: 'Sat', members: 1205, active: 825 },
+                    { day: 'Sun', members: 1228, active: 835 }
+                ]
+            };
+            updateMetrics();
+        }
+
+        // Event listeners
+        document.getElementById('simulate-day').addEventListener('click', simulateDay);
+        document.getElementById('simulate-week').addEventListener('click', simulateWeek);
+        document.getElementById('reset').addEventListener('click', resetSimulation);
+
+        // Initialize
+        updateMetrics();
+    </script>
+</body>
+</html>
