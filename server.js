@@ -43,7 +43,7 @@ const visibleCommands = [
   { command: '/scan <target>', description: 'Run a simulated security scan' },
   { command: '/users', description: 'Show online users (simulated)' },
   { command: '/monitor', description: 'Start monitoring (simulated)' },
-  { command: '/emergency', description: 'Emergency lockdown (simulated)' },
+  { command: '/ai <lang>|<question>', description: 'Mega AI: real-time contextual answer translated to <lang>' },
   { command: '/translate <lang>|<text>', description: 'Translate text to <lang> (e.g., /translate en|hola mundo)' },
   { command: '/idea <topic>', description: 'Generate advanced technology ideas' }
 ];
@@ -125,6 +125,35 @@ app.post('/api/answer', async (req, res) => {
   }
 });
 
+// Unified AI endpoint: answer + translation
+app.post('/api/ai', async (req, res) => {
+  try {
+    const { question, to } = req.body || {};
+    if (!question) return res.status(400).json({ error: 'question required' });
+    // build base answer
+    let snippets = [];
+    try {
+      const r = await fetch('https://worldtimeapi.org/api/ip');
+      if (r.ok) {
+        const j = await r.json();
+        snippets.push(`Current time: ${j.datetime}`);
+        snippets.push(`Timezone: ${j.timezone}`);
+      }
+    } catch (_) {}
+    let answer = `Based on my analysis, ${question} intersects with current context: ${snippets.join(' | ') || 'context unavailable'}.`;
+    let translated = answer;
+    if (to) {
+      try {
+        const resTr = await translate(answer, { to });
+        translated = resTr.text;
+      } catch (_) {}
+    }
+    res.json({ answer: translated, base: answer, context: snippets, to: to || 'en' });
+  } catch (e) {
+    res.status(500).json({ error: 'ai_failed' });
+  }
+});
+
 // Telegram bot setup
 const TelegramBot = require('node-telegram-bot-api');
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -177,9 +206,22 @@ if (token) {
     io.emit('feed', { type: 'monitor', message: 'Monitoring activated' });
   });
 
-  bot.onText(/\/emergency/, (msg) => {
-    bot.sendMessage(msg.chat.id, 'EMERGENCY LOCKDOWN INITIATED! All non-essential functions disabled.');
-    io.emit('feed', { type: 'emergency', message: 'Emergency lockdown triggered' });
+  // /ai <lang>|<question>
+  bot.onText(/^\/ai\s+([a-z]{2})\s*\|\s*([\s\S]+)/i, async (msg, match) => {
+    const lang = match && match[1];
+    const question = match && match[2];
+    if (!lang || !question) return bot.sendMessage(msg.chat.id, 'Usage: /ai <lang>|<question>');
+    try {
+      const resp = await fetch('http://localhost:' + PORT + '/api/ai', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, to: lang })
+      });
+      const data = await resp.json();
+      bot.sendMessage(msg.chat.id, data.answer || 'Working on it...');
+      io.emit('feed', { type: 'ai', message: `AI answered (${lang})` });
+    } catch (e) {
+      bot.sendMessage(msg.chat.id, 'AI failed to answer.');
+    }
   });
 
   // /translate <lang>|<text>
