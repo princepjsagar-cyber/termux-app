@@ -24,6 +24,13 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, status: 'online' });
 });
 
+// Expose AI key (masked) for UI visibility
+app.get('/api/ai-key', (req, res) => {
+  const key = process.env.OPENAI_API_KEY || '';
+  const masked = key ? key.slice(0, 7) + '...' + key.slice(-4) : '';
+  res.json({ configured: Boolean(key), masked });
+});
+
 // Bot status/info
 app.get('/api/bot-info', async (req, res) => {
   try {
@@ -130,17 +137,42 @@ app.post('/api/ai', async (req, res) => {
   try {
     const { question, to } = req.body || {};
     if (!question) return res.status(400).json({ error: 'question required' });
-    // build base answer
+    // Option A: Use OpenAI if configured
+    let answer = '';
     let snippets = [];
-    try {
-      const r = await fetch('https://worldtimeapi.org/api/ip');
-      if (r.ok) {
-        const j = await r.json();
-        snippets.push(`Current time: ${j.datetime}`);
-        snippets.push(`Timezone: ${j.timezone}`);
-      }
-    } catch (_) {}
-    let answer = `Based on my analysis, ${question} intersects with current context: ${snippets.join(' | ') || 'context unavailable'}.`;
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (openaiKey) {
+      try {
+        const completion = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are Mega Ultra AI. Answer concisely with real-time helpful context.' },
+              { role: 'user', content: question }
+            ]
+          })
+        });
+        const json = await completion.json();
+        answer = json?.choices?.[0]?.message?.content || '';
+      } catch (_) { /* fall back below */ }
+    }
+    // Fallback: heuristic + worldtime context
+    if (!answer) {
+      try {
+        const r = await fetch('https://worldtimeapi.org/api/ip');
+        if (r.ok) {
+          const j = await r.json();
+          snippets.push(`Current time: ${j.datetime}`);
+          snippets.push(`Timezone: ${j.timezone}`);
+        }
+      } catch (_) {}
+      answer = `Based on my analysis, ${question} intersects with current context: ${snippets.join(' | ') || 'context unavailable'}.`;
+    }
     let translated = answer;
     if (to) {
       try {
