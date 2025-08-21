@@ -1,0 +1,18 @@
+nohup: ignoring input
+/workspace/Python-telegram-Bot:51: SyntaxWarning: invalid escape sequence '\.'
+  "I can help you track member growth in your Telegram groups\. "
+/workspace/Python-telegram-Bot:52: SyntaxWarning: invalid escape sequence '\.'
+  "Use /help to see available commands\."
+ * Serving Flask app 'Python-telegram-Bot'
+ * Debug mode: off
+2025-08-21 04:23:45,217 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-08-21 04:23:45,217 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-21 04:23:45,253 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-08-21 04:23:45,504 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getMe "HTTP/1.1 200 OK"
+2025-08-21 04:23:45,585 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/deleteWebhook "HTTP/1.1 200 OK"
+2025-08-21 04:23:45,586 - apscheduler.scheduler - INFO - Added job "record_daily_members" to job store "default"
+2025-08-21 04:23:45,586 - apscheduler.scheduler - INFO - Scheduler started
+2025-08-21 04:23:45,586 - telegram.ext.Application - INFO - Application started
+2025-08-21 04:23:51,063 - werkzeug - INFO - 127.0.0.1 - - [21/Aug/2025 04:23:51] "GET /health HTTP/1.1" 200 -
+2025-08-21 04:23:55,853 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI/getUpdates "HTTP/1.1 200 OK"
