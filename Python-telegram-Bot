@@ -2,6 +2,7 @@ import logging
 import json
 from datetime import datetime
 from pathlib import Path
+import os
 
 from telegram import Update
 from telegram.ext import (
@@ -18,7 +19,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = "8073355370:AAHN8nV_rwG-cGx74sk-Hh2YjjUR3eDQbx8"
+TOKEN = "8002376288:AAE8R34Rv5QCC9A5d7IKqm8EzGFAdk46uYI"
 
 DATA_FILE = Path("growth_data.json")
 
@@ -57,9 +58,27 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 /growth - Show growth over time (admin only)
 /invite - Generate invite link (admin only)
 
+/dashboard - Get a link to the web dashboard
+
 *Note:* This bot only provides analytics and tools to help with organic growth.
 """
     await update.message.reply_text(help_text, parse_mode="Markdown")
+
+
+async def dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send the link to the local dashboard server."""
+    dashboard_url = os.environ.get("DASHBOARD_URL", "http://127.0.0.1:8000/")
+    try:
+        # Prefer a file written by tunnels if available
+        url_file = "/workspace/.public_dashboard_url"
+        if os.path.exists(url_file):
+            with open(url_file, "r") as f:
+                url = f.read().strip()
+                if url:
+                    dashboard_url = url
+    except Exception:
+        pass
+    await update.message.reply_text(f"📊 Open the dashboard here: {dashboard_url}")
 
 
 async def get_member_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -145,6 +164,7 @@ def main() -> None:
     # Register commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("dashboard", dashboard))
     app.add_handler(CommandHandler("stats", get_member_stats))
     app.add_handler(CommandHandler("growth", track_growth))
     app.add_handler(CommandHandler("invite", generate_invite))
